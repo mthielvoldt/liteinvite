@@ -1,0 +1,31 @@
+
+# Images
+public/images/
+
+# Thumbnails
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Output of 'npm pack'
+*.tgz
+
+# dotenv environment variables file
+.env
+.env.test
+/*.env
+
+# Stores VSCode versions used for testing VSCode extensions
+/.vscode
+.code-workspace
+.vscode-test

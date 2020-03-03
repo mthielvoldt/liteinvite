@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<main role="main">
+
+  <div class="jumbotron text-center">
+    <div class="container">
+      <h2> Hello, <%= user.name %> </h2>
+  
+      <hr>
+  
+      <a class="btn btn-lg btn-outline-dark" href="/logout" role="button">Log Out</a>
+      <a class="btn btn-dark btn-lg" href="/create" role="button">New Event</a>
+    </div>
+  </div>
+
+
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <div class="row">
+
+        <% meetups.forEach(function(meetup, index) { %>
+        <%- include('card', meetup) %>
+        <% }) %>
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+
+<%- include('partials/footer') %>
