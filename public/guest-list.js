@@ -13,21 +13,6 @@ ReactDOM.render(
     rootElement
 );
 
-function reqListener() {
-    document.getElementById("demo").innerHTML = this.responseText;
-}
-
-
-var oReq = new XMLHttpRequest();
-oReq.addEventListener("load", reqListener);
-oReq.addEventListener("error", () => { console.log(this.responseText) })
-
-function loadDoc() {
-    oReq.open("GET", "/ajax-info.txt");
-    oReq.send();
-}
-
-
 function App() {
     const [guests, setGuests] = useState([]);
 
@@ -41,11 +26,15 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
+    function addGuest(newGuestName) { 
+        setGuests( [...guests, {name: newGuestName}] );
+    }
+
     return (
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            <GuestAdd />
+            <GuestAdd addGuest={addGuest} />
             <SendInvites />
         </div>
     );
@@ -82,26 +71,38 @@ function GuestLine(props) {
 function ajaxSuccess() {
     console.log(this.responseText);
 }
-
 var oReq = new XMLHttpRequest();
 oReq.onload = ajaxSuccess;
 
-function SubmitGuest(event) {
-    event.preventDefault();
-    let oFormElement = event.target;
-    console.log(oFormElement);
-    console.log(oFormElement.action);
-
-    if (!oFormElement.action) { return; }
-    oReq.open("post", oFormElement.action);
-    oReq.send(new FormData(oFormElement));
-}
 
 function GuestAdd(props) {
+    const [ email, setEmail] = useState("");
+
+    function SubmitGuest(event) {
+        
+        let oFormElement = event.target;
+    
+        let formData = new FormData(oFormElement);
+        for ( let value of formData.values()) {
+            console.log(value);
+            props.addGuest(value);
+        }
+        oReq.open("post", oFormElement.action);
+        oReq.send(formData);
+        setEmail("");       // clear the input box. 
+        event.preventDefault();
+    }
+
+    function handleChange(event) {
+        let newEmail = event.target.value;      // pull out the "value" attribute. 
+        setEmail(newEmail);
+    }
+
     return (
-        <form className="card p-2 mb-2" action="/guest" method="POST" onSubmit={SubmitGuest} encType="application/x-www-form-urlencoded">
+        // for some reason, this is enctype="multipart/form-data".  Figure out why. 
+        <form className="card p-2 mb-2" action="/guest" method="POST" onSubmit={SubmitGuest} >
             <div className="input-group">
-                <input name="email" type="email" className="form-control" placeholder="Guest email" />
+                <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
                 <div className="input-group-append" />
             </div>
             <input type="submit" className="btn btn-secondary" value="Add Guests" />
