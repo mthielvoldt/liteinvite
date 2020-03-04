@@ -183,8 +183,12 @@ app.post('/upload', function (req, res) {
 
 });
 
-app.get('/success', function (req, res) {
-    res.send("Succeeded!");
+app.post('/guest', upload.none(), function(req, res, next) {
+    console.log(req.body);
+    console.log(req.body.email);
+    res.sendStatus(200);
+
+
 });
 
 app.post('/register', function (req, res) {

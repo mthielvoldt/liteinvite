@@ -1,28 +1,52 @@
 <%- include('partials/header') %>
 
 <!-- <div class="container"></div> -->
-    <h3>Sign in to LiteInvite</h3>
+<h3>Sign in to LiteInvite</h3>
 
-    <!-- Makes POST request to /login route -->
-    <div class="auth-form-body">
+<!-- Makes POST request to /login route -->
+<div class="auth-form-body">
 
-        <form action="/login" method="POST">
-            <div>
-                <label for="email">Email</label>
-                <input type="email" name="username" autofocus>
-            </div>
-            <div>
-                <label for="password">Password</label>
-                <input type="password" name="password">
-            </div>
-            <button type="submit" class="btn btn-dark">Login</button>
-            
-        </form>
-    </div>
-    <div class="auth-form-body">
-        <span>New to LiteInvite?</span><a class="btn btn-light signup-btn" href="/register" role="button">Sign-Up</a>
-    </div>
+    <form action="/login" method="POST">
+        <div>
+            <label for="email">Email</label>
+            <input type="email" name="username" autofocus>
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" name="password">
+        </div>
+        <button type="submit" class="btn btn-dark">Login</button>
 
-<!-- </div> -->
+    </form>
+</div>
+<div class="auth-form-body">
+    <span>New to LiteInvite?</span><a class="btn btn-light signup-btn" href="/register" role="button">Sign-Up</a>
+</div>
+
+<div>
+    <form action="/ajax" method="post">
+        <h2>The XMLHttpRequest Object</h2>
+        <button type="button" onclick="loadDoc()">Change Content</button>
+        <h2 id="demo"></h2>
+    </form>
+</div>
+
+<!-- Scripts -->
+
+<script>
+    function reqListener() {
+        document.getElementById("demo").innerHTML = this.responseText;
+    }
+
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", reqListener);
+    oReq.addEventListener("error", () => { console.log(this.responseText) })
+
+    function loadDoc() {
+        oReq.open("GET", "/ajax-info.txt");
+        oReq.send();
+    }
+
+</script>
 
 <%- include('partials/footer') %>
