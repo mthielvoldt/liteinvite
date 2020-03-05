@@ -85,6 +85,13 @@
 <!-- de-activates "upload" button before an image is selected -->
 <!-- de-activates "browse" if there are unsaved changes -->
 <script src="edit.js" type="text/javascript"> </script>
-<script src="guest-list.js" type="text/jsx" id="guest-list-script" meetup-id=<%= meetup._id %> > </script>
+
+
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="guest-list.js" type="text/jsx" id="guest-list-script" 
+  meetup-id=<%= meetup._id %> > 
+</script> 
+
+<!-- <script src="guest-list-2.js" type="text/javascript" id="guest-list-script" meetup-id=<%= meetup._id %> > </script> -->
 
 <%- include('partials/footer') %>

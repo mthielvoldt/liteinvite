@@ -46,6 +46,7 @@ const userSchema = new Schema({
     username: String,
     password: String,
     meetups: [ObjectId],
+    guests: [ObjectId],
 });
 const guestSchema = new Schema({
     name: String,
@@ -111,18 +112,37 @@ app.get('/create', function (req, res) {
     newMeetup.save();
     active_user.save();
 
-    res.redirect('edit');
+    res.redirect('/edit/' + newMeetup._id);
 });
 
+// The main edit page. 
 app.get('/edit/:meetId', function (req, res) {
     if (!req.isAuthenticated()) {
         res.redirect('/login');
     } else {
         Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-            res.render("edit", { meetup: foundMeetup, message: message, user: req.user });
+            res.render("edit", { meetup: foundMeetup, message: message });
             message = "";
         });
     }
+});
+app.get('/guestlist/:meetId.json', function (req, res) {
+
+    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
+        if (err) console.log(err);
+
+        Guest.find({ _id: { $in: foundMeetup.guests } }, 'email', function (err, foundGuests) {
+            if (err) {
+                console.log(err);
+            } else {
+                let dummyResponse = '[{ "name": "Aimee Mann" }, { "name": "Jeremy McGrath" }, { "name": "Farnoush Saiidnia" }]';
+                console.log(dummyResponse);
+                console.log(foundGuests);
+                res.send(JSON.stringify(foundGuests));
+                //res.sendFile(__dirname + "/public/ajax-info.json");
+            }
+        });
+    });
 });
 
 app.get('/delete/:meetId', function (req, res) {
@@ -201,12 +221,40 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
         if (err) {
             console.log(err);
         } else {
+            let newGuest;
+            // if we don't have this email in the DB, add it. 
             if (foundGuest == null) {
                 newGuest = new Guest({ email: newEmail });
                 newGuest.save();
                 console.log("added guest: " + JSON.stringify(newGuest));
             } else {
+                newGuest = foundGuest;
                 console.log("guest already exists");
+            }
+            // add this guest's ID  to the meetup's guest-list. (if it isn't there)
+            console.log("meetId: " + req.params.meetId);
+            Meetup.findById(req.params.meetId, function (err, meetup) {
+                if (err) { console.log(err); }
+
+                if (meetup.guests.indexOf(newGuest._id) === -1) {
+                    meetup.guests.push(newGuest._id);
+                    meetup.save();
+                    console.log("added guest to meetup")
+                } else {
+                    console.log("guest already associated with this meetup.")
+                }
+            });
+
+            // add this guest's ID  to the user's guest-list (if it isn't there)
+            let user = req.user;
+            console.log("._id: " + user._id);
+
+            if (user.guests.indexOf(newGuest._id) === -1) {
+                user.guests.push(newGuest._id);
+                user.save();
+                console.log("added guest to user")
+            } else {
+                console.log("guest already associated with this user.")
             }
         }
     })

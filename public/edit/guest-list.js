@@ -4,9 +4,10 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const thisScript = $("#guest-list-script");
-const guestRoute = "/guest/" + thisScript.attr("meetup-id");
-console.log(guestRoute);
-
+const meetId = thisScript.attr("meetup-id");
+const guestPostRoute = "/guest/" + meetId;
+const guestListRoute = "/guestlist/" + meetId + ".json";
+console.log("meetId: " + meetId);
 
 const rootElement = document.getElementById("guest-list");
 ReactDOM.render(
@@ -21,7 +22,7 @@ function App() {
 
     // run only once at page-load to populate the guest-list
     useEffect(() => {
-        fetch("/ajax-info.json")
+        fetch(guestListRoute)
             .then(res => res.json())
             .then((fetchedGuests) => {
                 setGuests(fetchedGuests);
@@ -64,7 +65,7 @@ function GuestLine(props) {
     return (
         <li className="list-group-item d-flex justify-content-between lh-condensed">
             <div>
-                <h6 className="my-0">{props.guest.name}</h6>
+                <h6 className="my-0">{props.guest.email}</h6>
             </div>
             <strong className="text-success">&#10004;</strong>
         </li>
@@ -103,7 +104,7 @@ function GuestAdd(props) {
 
     return (
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
-        <form className="card p-2 mb-2" action={guestRoute} method="POST" onSubmit={SubmitGuest} >
+        <form className="card p-2 mb-2" action={guestPostRoute} method="POST" onSubmit={SubmitGuest} >
             <div className="input-group">
                 <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
                 <div className="input-group-append" />
