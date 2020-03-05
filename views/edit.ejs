@@ -21,7 +21,7 @@
         Event Details
       </h3>
 
-      <form id="meetup-edit" action="/edit" method="POST" class="needs-validation" novalidate>
+      <form id="meetup-edit" action="/edit/<%=meetup._id%>" method="POST" class="needs-validation" novalidate>
         <div class="mb-3">
 
           <input type="text" name="name" value="<%=meetup.name%>" class="form-control meet-details"

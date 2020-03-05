@@ -48,8 +48,8 @@ const userSchema = new Schema({
     meetups: [ObjectId],
 });
 const guestSchema = new Schema({
-    name: { type: String, required: true },
-    email: String,
+    name: String,
+    email: { type: String, required: true },
     phone: String
 });
 const meetupSchema = new Schema({
@@ -73,7 +73,7 @@ passport.use(User.createStrategy());                // connect passport to the U
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-let active_user, active_meetup, message;
+let active_user, message;
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
 
 app.get('/', function (req, res) {
@@ -106,19 +106,25 @@ app.get('/register', function (req, res) {
 });
 
 app.get('/create', function (req, res) {
-    active_meetup = new Meetup({ owner: active_user._id, name: "", image: defaultImage });
-    active_user.meetups.push(active_meetup._id);
-    active_meetup.save();
+    let newMeetup = new Meetup({ owner: active_user._id, name: "", image: defaultImage });
+    active_user.meetups.push(newMeetup._id);
+    newMeetup.save();
     active_user.save();
 
     res.redirect('edit');
 });
+
 app.get('/edit/:meetid', function (req, res) {
-    Meetup.findById(req.params.meetid, (err, foundMeetup) => {
-        active_meetup = foundMeetup;
-        res.redirect('/edit');
-    });
+    if (!req.isAuthenticated()) {
+        res.redirect('/login');
+    } else {
+        Meetup.findById(req.params.meetid, (err, foundMeetup) => {
+            res.render("edit", { meetup: foundMeetup, message: message });
+            message = "";
+        });
+    }
 });
+
 app.get('/delete/:meetid', function (req, res) {
     let meetId = req.params.meetid;
     // remove the meetupId from the user's array of meetups. 
@@ -131,25 +137,17 @@ app.get('/delete/:meetid', function (req, res) {
     console.log(active_user.meetups);
 
     Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
-        active_meetup = null;
         res.redirect('/');
     });
 });
 
-app.get('/edit', function (req, res) {
-    if (!req.isAuthenticated()) {
-        res.redirect('/login');
-    } else {
-        res.render("edit", { meetup: active_meetup, message: message });
-        message = "";
-    }
-
-});
-app.post('/edit', function (req, res) {
-    Object.assign(active_meetup, req.body);
-    active_meetup.save();
-    message = "Changes Saved.";
-    res.redirect("/edit");
+app.post('/edit/:meetid', function (req, res) {
+    Meetup.findById(req.params.meetid, (err, foundMeetup) => {
+        Object.assign(foundMeetup, req.body);
+        foundMeetup.save();
+        message = "Changes Saved.";
+        res.redirect("/edit/" + req.params.meetid );
+    });
 });
 
 app.post('/upload', function (req, res) {
@@ -183,9 +181,27 @@ app.post('/upload', function (req, res) {
 
 });
 
-app.post('/guest', upload.none(), function(req, res, next) {
-    console.log(req.body);
-    console.log(req.body.email);
+app.post('/guest', upload.none(), function (req, res, next) {
+
+    // check if we alredy have that email
+    let newEmail = req.body.email;
+    let newEmailRegex = new RegExp("^" + newEmail, 'i');
+    console.log(newEmailRegex);
+
+    Guest.findOne({ email: newEmailRegex }, (err, foundGuest) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(foundGuest);
+            if (foundGuest == null) {
+                newGuest = new Guest({ email: newEmail });
+                newGuest.save();
+                console.log("added guest: " + JSON.stringify(newGuest));
+            } else {
+                console.log("guest already exists");
+            }
+        }
+    })
     res.sendStatus(200);
 
 
