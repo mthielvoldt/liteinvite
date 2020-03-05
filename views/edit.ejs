@@ -56,7 +56,7 @@
       <hr class="mb-3">
 
       <!-- Background Image -->
-      <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+      <form id="upload-form" action="/upload/<%=meetup._id%>" method="post" enctype="multipart/form-data">
         <div class="input-group mb-3">
           <div class="custom-file">
             <input type="file" name="meetupImage" id="meetupImageInput" class="custom-file-input" accept="image/*">

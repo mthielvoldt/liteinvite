@@ -49,8 +49,8 @@ const userSchema = new Schema({
     guests: [ObjectId],
 });
 const guestSchema = new Schema({
-    name: String,
     email: { type: String, required: true },
+    name: String,
     phone: String
 });
 const meetupSchema = new Schema({
@@ -61,7 +61,7 @@ const meetupSchema = new Schema({
     location: String,
     time: String,
     lists: [],
-    guests: [ObjectId]
+    guests: [{ id: ObjectId, status: Number }],
 });
 
 userSchema.plugin(passportLocalMongoose);   // use passport local mongoose to handle hashing and salting passwords
@@ -74,12 +74,12 @@ passport.use(User.createStrategy());                // connect passport to the U
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-let active_user, message;
+let message = "";
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
 
 app.get('/', function (req, res) {
     if (req.isAuthenticated()) {
-        active_user = req.user;
+        let active_user = req.user;
 
         Meetup.find({ _id: { $in: active_user.meetups } }, (err, foundMeetups) => {
             if (err) {
@@ -107,12 +107,17 @@ app.get('/register', function (req, res) {
 });
 
 app.get('/create', function (req, res) {
+    let active_user = req.user;
     let newMeetup = new Meetup({ owner: active_user._id, name: "", image: defaultImage });
     active_user.meetups.push(newMeetup._id);
     newMeetup.save();
-    active_user.save();
 
-    res.redirect('/edit/' + newMeetup._id);
+    // use a promise to make sure the save is complete before redirecting. 
+    active_user.save()
+        .then(() => {
+            console.log("Saved new meetup.")
+            res.redirect('/edit/' + newMeetup._id);
+        });
 });
 
 // The main edit page. 
@@ -121,8 +126,15 @@ app.get('/edit/:meetId', function (req, res) {
         res.redirect('/login');
     } else {
         Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-            res.render("edit", { meetup: foundMeetup, message: message });
-            message = "";
+            if (err) { console.log(err); }
+            if (foundMeetup == null) {
+                console.log("couldn't find meetId: " + req.params.meetId)
+                res.redirect('/');
+            } else {
+                res.render("edit", { meetup: foundMeetup, message: message });
+                message = "";
+            }
+
         });
     }
 });
@@ -135,11 +147,7 @@ app.get('/guestlist/:meetId.json', function (req, res) {
             if (err) {
                 console.log(err);
             } else {
-                let dummyResponse = '[{ "name": "Aimee Mann" }, { "name": "Jeremy McGrath" }, { "name": "Farnoush Saiidnia" }]';
-                console.log(dummyResponse);
-                console.log(foundGuests);
                 res.send(JSON.stringify(foundGuests));
-                //res.sendFile(__dirname + "/public/ajax-info.json");
             }
         });
     });
@@ -147,18 +155,21 @@ app.get('/guestlist/:meetId.json', function (req, res) {
 
 app.get('/delete/:meetId', function (req, res) {
     let meetId = req.params.meetId;
+    let active_user = req.user;
     // remove the meetupId from the user's array of meetups. 
-    console.log(meetId);
-    console.log(active_user.meetups);
     let newMeetups = active_user.meetups.filter((value) => (value != meetId));
-    console.log(newMeetups)
-    console.log("meetup deleted: " + meetId);
-    active_user.meetups = newMeetups;
-    console.log(active_user.meetups);
 
-    Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
-        res.redirect('/');
-    });
+    if ((active_user.meetups.length - newMeetups.length) !== 1) {
+        console.error("Meetup Deletion error");
+
+    } else {
+        console.log("Deleted 1 meetup: " + meetId);
+        active_user.meetups = newMeetups;
+
+        Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
+            res.redirect('/');
+        });
+    }
 });
 
 app.post('/edit/:meetId', function (req, res) {
@@ -170,7 +181,7 @@ app.post('/edit/:meetId', function (req, res) {
         Object.assign(foundMeetup, req.body);
         foundMeetup.save();
         message = "Changes Saved.";
-        res.redirect("/edit/" + req.params.meetId);
+        res.redirect('/edit/' + req.params.meetId);
     });
 });
 
@@ -179,11 +190,10 @@ app.post('/upload/:meetId', function (req, res) {
         if (err) {
             console.log(err.message);
             message = "Error: " + err.message;  // display this message
-            res.redirect('/edit');
         } else {
             updateImageLink();
-            res.redirect('/edit');
         }
+        res.redirect('/edit/' + req.params.meetId);
     });
 
     function updateImageLink() {
@@ -246,12 +256,12 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
             });
 
             // add this guest's ID  to the user's guest-list (if it isn't there)
-            let user = req.user;
-            console.log("._id: " + user._id);
+            let active_user = req.user;
+            console.log("._id: " + active_user._id);
 
-            if (user.guests.indexOf(newGuest._id) === -1) {
-                user.guests.push(newGuest._id);
-                user.save();
+            if (active_user.guests.indexOf(newGuest._id) === -1) {
+                active_user.guests.push(newGuest._id);
+                active_user.save();
                 console.log("added guest to user")
             } else {
                 console.log("guest already associated with this user.")
@@ -264,7 +274,8 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
 });
 
 app.post('/register', function (req, res) {
-    console.log(req.body);
+
+    //console.log(req.body); // this seems like a security issue. It prints the password.
     User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
