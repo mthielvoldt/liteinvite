@@ -114,19 +114,19 @@ app.get('/create', function (req, res) {
     res.redirect('edit');
 });
 
-app.get('/edit/:meetid', function (req, res) {
+app.get('/edit/:meetId', function (req, res) {
     if (!req.isAuthenticated()) {
         res.redirect('/login');
     } else {
-        Meetup.findById(req.params.meetid, (err, foundMeetup) => {
-            res.render("edit", { meetup: foundMeetup, message: message });
+        Meetup.findById(req.params.meetId, (err, foundMeetup) => {
+            res.render("edit", { meetup: foundMeetup, message: message, user: req.user });
             message = "";
         });
     }
 });
 
-app.get('/delete/:meetid', function (req, res) {
-    let meetId = req.params.meetid;
+app.get('/delete/:meetId', function (req, res) {
+    let meetId = req.params.meetId;
     // remove the meetupId from the user's array of meetups. 
     console.log(meetId);
     console.log(active_user.meetups);
@@ -141,16 +141,20 @@ app.get('/delete/:meetid', function (req, res) {
     });
 });
 
-app.post('/edit/:meetid', function (req, res) {
-    Meetup.findById(req.params.meetid, (err, foundMeetup) => {
+app.post('/edit/:meetId', function (req, res) {
+    Meetup.findById(req.params.meetId, (err, foundMeetup) => {
+        if (err) {
+            console.log(err);
+            return;
+        }
         Object.assign(foundMeetup, req.body);
         foundMeetup.save();
         message = "Changes Saved.";
-        res.redirect("/edit/" + req.params.meetid );
+        res.redirect("/edit/" + req.params.meetId);
     });
 });
 
-app.post('/upload', function (req, res) {
+app.post('/upload/:meetId', function (req, res) {
     upload.single('meetupImage')(req, res, function (err) {
         if (err) {
             console.log(err.message);
@@ -163,36 +167,40 @@ app.post('/upload', function (req, res) {
     });
 
     function updateImageLink() {
-        if (active_meetup.image != defaultImage) {
-            let oldFile = "public/images/" + active_meetup.image;
-            fs.unlink(oldFile, (err) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log('successfully deleted: ' + oldFile);
-                }
-            });
-        }
-        active_meetup.image = req.file.filename;
-        console.log(active_meetup);
-        console.log("updated meetup image link");
-        active_meetup.save();
+        Meetup.findById(req.params.meetId, (err, foundMeetup) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            // delete the old image if it isn't the default image. 
+            if (foundMeetup.image != defaultImage) {
+                let oldFile = "public/images/" + foundMeetup.image;
+                fs.unlink(oldFile, (err) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log('successfully deleted: ' + oldFile);
+                    }
+                });
+            }
+            foundMeetup.image = req.file.filename;
+            console.log(foundMeetup);
+            console.log("updated meetup image link");
+            foundMeetup.save();
+        });
     }
-
 });
 
-app.post('/guest', upload.none(), function (req, res, next) {
+app.post('/guest/:meetId', upload.none(), function (req, res, next) {
 
     // check if we alredy have that email
     let newEmail = req.body.email;
     let newEmailRegex = new RegExp("^" + newEmail, 'i');
-    console.log(newEmailRegex);
 
     Guest.findOne({ email: newEmailRegex }, (err, foundGuest) => {
         if (err) {
             console.log(err);
         } else {
-            console.log(foundGuest);
             if (foundGuest == null) {
                 newGuest = new Guest({ email: newEmail });
                 newGuest.save();

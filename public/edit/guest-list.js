@@ -3,6 +3,9 @@
 const useState = React.useState;
 const useEffect = React.useEffect;
 
+const thisScript = $("#guest-list-script");
+const guestRoute = "/guest/" + thisScript.attr("meetup-id");
+console.log(guestRoute);
 
 
 const rootElement = document.getElementById("guest-list");
@@ -100,7 +103,7 @@ function GuestAdd(props) {
 
     return (
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
-        <form className="card p-2 mb-2" action="/guest" method="POST" onSubmit={SubmitGuest} >
+        <form className="card p-2 mb-2" action={guestRoute} method="POST" onSubmit={SubmitGuest} >
             <div className="input-group">
                 <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
                 <div className="input-group-append" />
