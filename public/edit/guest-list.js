@@ -38,7 +38,7 @@ function App() {
         if (hasMatch) {
             console.log("email matches one previously entered.");
         } else {
-            setGuests( [...guests, {email: newGuestEmail}] );
+            setGuests( [...guests, {email: newGuestEmail, status: 0}] );
         }
     }
 
