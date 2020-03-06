@@ -61,7 +61,7 @@ const meetupSchema = new Schema({
     location: String,
     time: String,
     lists: [],
-    guests: [{ id: ObjectId, status: Number }],
+    guests: [{ _id: false, id: ObjectId, status: Number }],
 });
 
 userSchema.plugin(passportLocalMongoose);   // use passport local mongoose to handle hashing and salting passwords
@@ -143,14 +143,31 @@ app.get('/guestlist/:meetId.json', function (req, res) {
     Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) console.log(err);
 
-        Guest.find({ _id: { $in: foundMeetup.guests } }, 'email', function (err, foundGuests) {
+        // make an array of id's for the guests that are associated with this meetup. 
+        let guestIds = foundMeetup.guests.map( ( meetupGuest ) => meetupGuest.id);
+
+        // find all guests whose id's are in the above array with one query. 
+        Guest.find({ _id: { $in: guestIds } }, function (err, foundGuests) {
             if (err) {
                 console.log(err);
             } else {
-                console.log("guests for this meet: " + JSON.stringify(foundGuests));
-                res.send(JSON.stringify(foundGuests));
+
+                // now we have two arrays: foundGuests and foundMeetup.guests. 
+                // foundGuests has the names and emails, 
+                // foundMeetup.guests has the status (coming, not coming, undecided)
+                // these arrays are not necessarily in the same order. 
+                let guestList = foundMeetup.guests.map( (meetupGuest) => {
+                    let dbGuest = foundGuests.find( (dbGuest) => {
+                        return (dbGuest._id.toString() === meetupGuest.id.toString() );
+                    });
+                    return { name:dbGuest.name, email: dbGuest.email, status: meetupGuest.status };
+                });
+
+                console.log("guests for this meet: " + JSON.stringify(guestList));
+                res.send(JSON.stringify(guestList));
             }
-        });
+        });            
+        
     });
 });
 
@@ -235,7 +252,7 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
             let newGuest;
             // if we don't have this email in the DB, add it. 
             if (foundGuest == null) {
-                newGuest = new Guest({ email: newEmail });
+                newGuest = new Guest({ email: newEmail, name: "" });
                 newGuest.save();
                 console.log("added guest: " + JSON.stringify(newGuest));
             } else {
@@ -243,29 +260,28 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
                 console.log("guest already exists");
             }
             // add this guest's ID  to the meetup's guest-list. (if it isn't there)
-            console.log("meetId: " + req.params.meetId);
             Meetup.findById(req.params.meetId, function (err, meetup) {
                 if (err) { console.log(err); }
 
-                if (meetup.guests.indexOf(newGuest._id) === -1) {
-                    meetup.guests.push(newGuest._id);
-                    meetup.save();
-                    console.log("added guest to meetup")
-                } else {
+                 // if this guest is already present, don't add to the array. 
+                if (meetup.guests.some( (guest) => ( guest.id.toString() === newGuest._id.toString() ) ) ) {   
                     console.log("guest already associated with this meetup.")
+                } else {
+                    meetup.guests.push({id: newGuest._id, status: 0 });
+                    meetup.save();
+                    console.log("added guest to meetup");
                 }
             });
 
             // add this guest's ID  to the user's guest-list (if it isn't there)
             let active_user = req.user;
-            console.log("._id: " + active_user._id);
 
-            if (active_user.guests.indexOf(newGuest._id) === -1) {
+            if (active_user.guests.includes(newGuest._id)) {
+                console.log("guest already associated with this user.")
+            } else {
                 active_user.guests.push(newGuest._id);
                 active_user.save();
                 console.log("added guest to user")
-            } else {
-                console.log("guest already associated with this user.")
             }
         }
     })

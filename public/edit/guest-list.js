@@ -75,7 +75,11 @@ function GuestLine(props) {
             <div>
                 <h6 className="my-0">{props.guest.email}</h6>
             </div>
-            <strong className="text-success">&#10004;</strong>
+            <strong className="text-success"> 
+                {props.guest.status === 1 && '\u2714'}
+                {props.guest.status === 0 && '\u2753'}  
+                {props.guest.status === -1 && '\u2718'}
+            </strong>
         </li>
     );
 }
