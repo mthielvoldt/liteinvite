@@ -55,7 +55,7 @@ function App() {
 function GuestHeader(props) {
     return (
         <h3 className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">Guest List</span>
+            <span>Guest List</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
         </h3>
     );

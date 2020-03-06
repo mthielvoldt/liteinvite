@@ -1,0 +1,60 @@
+<%- include('partials/header') %>
+
+<style>
+  body {
+    background-image: url("/images/<%= meetup.image %>");
+    background-size: cover;
+    color: white;
+  }
+</style>
+
+
+<div class="overlay"></div>
+<div class="container p-3 pt-md-5">
+  <div class="py-3 text-center">
+    <h1 class=""><%= meetup.name %></h1>
+    <!-- <h3 class="text-danger"><strong><%= message %></strong></h3> -->
+  </div>
+
+  <div class="row">
+    <div class="col-md-8 order-md-1">
+
+      <div class="mb-3">
+        <p><%= meetup.desc %></p>
+      </div>
+
+      <!-- Where and When -->
+      <div class="mb-3">
+        <p><%= meetup.location %></p>
+      </div>
+
+      <div class="mb-3">
+        <p><%= meetup.time %></p>
+      </div>
+
+      <hr class="mb-3">
+
+    </div>
+
+
+
+    <!-- Guest List -->
+    <div class="col-md-4 order-md-2 mb-4">
+      <div id="guest-list"></div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<%- include('partials/scripts') %>
+
+
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="/edit/guest-list.js" type="text/jsx" id="guest-list-script" meetup-id=<%= meetup._id %>>
+</script>
+
+<!-- <script src="guest-list-2.js" type="text/javascript" id="guest-list-script" meetup-id=<%= meetup._id %> > </script> -->
+
+<%- include('partials/footer') %>

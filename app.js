@@ -138,13 +138,27 @@ app.get('/edit/:meetId', function (req, res) {
         });
     }
 });
+
+app.get('/event/:meetId', function (req, res) {
+    Meetup.findById(req.params.meetId, (err, foundMeetup) => {
+        if (err) { console.log(err); }
+        if (foundMeetup == null) {
+            console.log("couldn't find meetId: " + req.params.meetId)
+            res.redirect('/');
+        } else {
+            res.render("event", { meetup: foundMeetup, message: message });
+            message = "";
+        }
+    });
+});
+
 app.get('/guestlist/:meetId.json', function (req, res) {
 
     Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) console.log(err);
 
         // make an array of id's for the guests that are associated with this meetup. 
-        let guestIds = foundMeetup.guests.map( ( meetupGuest ) => meetupGuest.id);
+        let guestIds = foundMeetup.guests.map((meetupGuest) => meetupGuest.id);
 
         // find all guests whose id's are in the above array with one query. 
         Guest.find({ _id: { $in: guestIds } }, function (err, foundGuests) {
@@ -156,18 +170,18 @@ app.get('/guestlist/:meetId.json', function (req, res) {
                 // foundGuests has the names and emails, 
                 // foundMeetup.guests has the status (coming, not coming, undecided)
                 // these arrays are not necessarily in the same order. 
-                let guestList = foundMeetup.guests.map( (meetupGuest) => {
-                    let dbGuest = foundGuests.find( (dbGuest) => {
-                        return (dbGuest._id.toString() === meetupGuest.id.toString() );
+                let guestList = foundMeetup.guests.map((meetupGuest) => {
+                    let dbGuest = foundGuests.find((dbGuest) => {
+                        return (dbGuest._id.toString() === meetupGuest.id.toString());
                     });
-                    return { name:dbGuest.name, email: dbGuest.email, status: meetupGuest.status };
+                    return { name: dbGuest.name, email: dbGuest.email, status: meetupGuest.status };
                 });
 
                 console.log("guests for this meet: " + JSON.stringify(guestList));
                 res.send(JSON.stringify(guestList));
             }
-        });            
-        
+        });
+
     });
 });
 
@@ -263,11 +277,11 @@ app.post('/guest/:meetId', upload.none(), function (req, res, next) {
             Meetup.findById(req.params.meetId, function (err, meetup) {
                 if (err) { console.log(err); }
 
-                 // if this guest is already present, don't add to the array. 
-                if (meetup.guests.some( (guest) => ( guest.id.toString() === newGuest._id.toString() ) ) ) {   
+                // if this guest is already present, don't add to the array. 
+                if (meetup.guests.some((guest) => (guest.id.toString() === newGuest._id.toString()))) {
                     console.log("guest already associated with this meetup.")
                 } else {
-                    meetup.guests.push({id: newGuest._id, status: 0 });
+                    meetup.guests.push({ id: newGuest._id, status: 0 });
                     meetup.save();
                     console.log("added guest to meetup");
                 }

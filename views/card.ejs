@@ -6,8 +6,8 @@
       <p class="card-text"><%- name || "<em>Untitled</em>" %> </p>
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-          <a href="/edit/<%= _id %> " class="btn btn-sm btn-outline-secondary">Edit</a>
+          <a href="/event/<%= _id %>" class="btn btn-sm btn-outline-secondary">View</a>
+          <a href="/edit/<%= _id %>"  class="btn btn-sm btn-outline-secondary">Edit</a>
         </div>
         <a href="/delete/<%= _id %> " class="btn btn-sm btn-outline-secondary">Delete</a>
       </div>
