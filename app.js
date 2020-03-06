@@ -147,6 +147,7 @@ app.get('/guestlist/:meetId.json', function (req, res) {
             if (err) {
                 console.log(err);
             } else {
+                console.log("guests for this meet: " + JSON.stringify(foundGuests));
                 res.send(JSON.stringify(foundGuests));
             }
         });

@@ -30,8 +30,16 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
-    function addGuest(newGuestName) { 
-        setGuests( [...guests, {name: newGuestName}] );
+    function addGuest(newGuestEmail) { 
+
+        // Check to see if this email has been entered before (case-insensitive match)
+        const hasMatch = guests.some( (guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase() );
+
+        if (hasMatch) {
+            console.log("email matches one previously entered.");
+        } else {
+            setGuests( [...guests, {email: newGuestEmail}] );
+        }
     }
 
     return (
@@ -83,13 +91,14 @@ function GuestAdd(props) {
     const [ email, setEmail] = useState("");
 
     function SubmitGuest(event) {
+
+        // Here, we pass this email string to the parent component.
+        props.addGuest(email);
         
         let oFormElement = event.target;
-    
         let formData = new FormData(oFormElement);
         for ( let value of formData.values()) {
             console.log(value);
-            props.addGuest(value);
         }
         oReq.open("post", oFormElement.action);
         oReq.send(formData);
