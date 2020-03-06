@@ -2,25 +2,23 @@
 
 
 <!-- Makes POST request to /login route -->
-<div class="full-width">
-    <div class="auth-form-body">
-        <h3>Sign in to LiteInvite</h3>
-        <form action="/login" method="POST">
-            <div>
-                <label for="email">Email</label>
-                <input type="email" name="username" autofocus>
-            </div>
-            <div>
-                <label for="password">Password</label>
-                <input type="password" name="password">
-            </div>
-            <button type="submit" class="btn btn-dark">Login</button>
+<div class="login-box auth-form-box">
+    <h3>Sign in to LiteInvite</h3>
+    <form action="/login" method="POST">
+        <div>
+            <label for="email">Email</label>
+            <input type="email" name="username" autofocus>
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" name="password">
+        </div>
+        <button type="submit" class="btn btn-dark">Login</button>
 
-        </form>
-    </div>
-    <div class="auth-form-body">
-        <span>New to LiteInvite?</span><a class="btn btn-dark signup-btn" href="/register" role="button">Sign-Up</a>
-    </div>
+    </form>
+</div>
+<div class="login-box">
+    <span>New to LiteInvite?</span><a class="btn btn-dark signup-btn" href="/register" role="button">Sign-Up</a>
 </div>
 
 <%- include('partials/scripts') %>

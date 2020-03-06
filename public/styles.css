@@ -13,12 +13,15 @@
     opacity: 0.5;
   }
 
-  .auth-form-body {
+  .login-box {
+    margin: 25px auto;
     border: 1px solid #8797a1;
     padding: 15px 20px;
     border-radius: 5px;
     width: 340px;
-    margin: 5% auto 25px auto;
+  }
+  .auth-form-box {
+    margin-top: 5%;
   }
   
   
