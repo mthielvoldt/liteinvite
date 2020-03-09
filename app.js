@@ -106,30 +106,23 @@ app.get('/register', function (req, res) {
     res.render("register");
 });
 
-app.get('/create', function (req, res) {
-    let active_user = req.user;
-    let newMeetup = new Meetup({ owner: active_user._id, name: "", image: defaultImage });
-    active_user.meetups.push(newMeetup._id);
-    newMeetup.save();
+// The main edit page, for users that own the event only. 
+app.get('/events/:meetId/edit', function (req, res) {
+    let user = req.user;
+    console.log(user._id);
 
-    // use a promise to make sure the save is complete before redirecting. 
-    active_user.save()
-        .then(() => {
-            console.log("Saved new meetup.")
-            res.redirect('/edit/' + newMeetup._id);
-        });
-});
-
-// The main edit page. 
-app.get('/edit/:meetId', function (req, res) {
     if (!req.isAuthenticated()) {
-        res.redirect('/login');
+        res.sendStatus(401);    // Unauthorized: please sign in to access this. 
     } else {
         Meetup.findById(req.params.meetId, (err, foundMeetup) => {
             if (err) { console.log(err); }
             if (foundMeetup == null) {
                 console.log("couldn't find meetId: " + req.params.meetId)
-                res.redirect('/');
+                res.sendStatus(404);    // not found (can't find that meetup)
+            } else if ( user._id.toString() !== foundMeetup.owner.toString() ) {
+                console.log("user._id:    " + user._id);
+                console.log("metup.owner: " + foundMeetup.owner );
+                res.sendStatus(403);    // forbidden (user is authenticated, but doesn't own this event)
             } else {
                 res.render("edit", { meetup: foundMeetup, message: message });
                 message = "";
@@ -139,49 +132,48 @@ app.get('/edit/:meetId', function (req, res) {
     }
 });
 
-app.get('/event/:meetId', function (req, res) {
+// page for viewing event.  Does not require auth.  Optionally includes guest-id parameter. 
+app.get('/events/:meetId', function (req, res) {
     Meetup.findById(req.params.meetId, (err, foundMeetup) => {
         if (err) { console.log(err); }
         if (foundMeetup == null) {
             console.log("couldn't find meetId: " + req.params.meetId)
-            res.redirect('/');
+            res.sendStatus(404);    // not found. 
         } else {
-            res.render("event", { meetup: foundMeetup, message: message });
-            message = "";
+            if (req.query.guestid == null) {
+                res.render("event", { meetup: foundMeetup, message: message, guestEmail: "" });
+                message = "";
+            } else {
+                console.log(req.query.guestid);
+                res.sendStatus(200);
+            }
+            
         }
     });
 });
 
-app.get('/guestlist/:meetId.json', function (req, res) {
+//
+app.get('/events/:meetId/guests-full', function (req, res) {
+
+    if (!req.isAuthenticated()) {
+        res.status(403).send("please sign in to view full guest-list");
+        return;
+    }
 
     Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) console.log(err);
 
-        // make an array of id's for the guests that are associated with this meetup. 
-        let guestIds = foundMeetup.guests.map((meetupGuest) => meetupGuest.id);
+        if (foundMeetup == null) {
+            res.status(404).send("sorry, I can't find that event.");
+            return;
+        }
+        if ( foundMeetup.owner.toString() !== req.user._id ) {
+            res.status(403).send("Only an event organizer can view the full guest list.")
+            return;
+        }
 
-        // find all guests whose id's are in the above array with one query. 
-        Guest.find({ _id: { $in: guestIds } }, function (err, foundGuests) {
-            if (err) {
-                console.log(err);
-            } else {
-
-                // now we have two arrays: foundGuests and foundMeetup.guests. 
-                // foundGuests has the names and emails, 
-                // foundMeetup.guests has the status (coming, not coming, undecided)
-                // these arrays are not necessarily in the same order. 
-                let guestList = foundMeetup.guests.map((meetupGuest) => {
-                    let dbGuest = foundGuests.find((dbGuest) => {
-                        return (dbGuest._id.toString() === meetupGuest.id.toString());
-                    });
-                    return { name: dbGuest.name, email: dbGuest.email, status: meetupGuest.status };
-                });
-
-                console.log("guests for this meet: " + JSON.stringify(guestList));
-                res.send(JSON.stringify(guestList));
-            }
-        });
-
+        console.log("guests for this meet: " + JSON.stringify(foundMeetup.guests));
+        res.json(foundMeetup.guests);
     });
 });
 
@@ -203,6 +195,31 @@ app.get('/delete/:meetId', function (req, res) {
         });
     }
 });
+
+///////////////////// POST routes follow ????????????????????????
+
+// creates a new event
+app.post('/events', function (req, res) {
+    let user = req.user;
+    // add user authentication
+
+    let newMeetup = new Meetup({ owner: user._id, name: "", image: defaultImage });
+    user.meetups.push(newMeetup._id);
+    newMeetup.save();
+
+    // use a promise to make sure the save is complete before redirecting. 
+    user.save()
+        .then(() => {
+            console.log("Saved new meetup.")
+            res.redirect('/events/' + newMeetup._id + '/edit');
+        });
+});
+
+// creates new guest associated with specified event. 
+app.post('/events/:meetId/guests', function (req, res) {
+    res.send("create a new guest in event: " + req.params.meetId );
+});
+
 
 app.post('/edit/:meetId', function (req, res) {
     Meetup.findById(req.params.meetId, (err, foundMeetup) => {
