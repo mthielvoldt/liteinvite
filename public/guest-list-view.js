@@ -30,15 +30,16 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
-    function addGuest(newGuestEmail) { 
+    function addGuest(newGuest) {
+        console.log(newGuest);
 
         // Check to see if this email has been entered before (case-insensitive match)
-        const hasMatch = guests.some( (guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase() );
+        const hasMatch = guests.some((guest) => guest.email.toUpperCase() === newGuest.email.toUpperCase());
 
         if (hasMatch) {
             console.log("email matches one previously entered.");
         } else {
-            setGuests( [...guests, {email: newGuestEmail, status: 0}] );
+            setGuests([...guests, newGuest ]);
         }
     }
 
@@ -46,8 +47,7 @@ function App() {
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            <GuestAdd addGuest={addGuest} />
-            <SendInvites />
+            <RSVP addGuest={addGuest} />
         </div>
     );
 }
@@ -55,7 +55,7 @@ function App() {
 function GuestHeader(props) {
     return (
         <h3 className="d-flex justify-content-between align-items-center mb-3">
-            <span>Guest List</span>
+            <span>Who's Coming:</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
         </h3>
     );
@@ -64,7 +64,7 @@ function GuestList(props) {
     return (
         <ul className="list-group mb-3">
             {props.guests.map((guest, index) => (
-                <GuestLine guest={guest} key={index} />
+                props.guests.status && <GuestLine guest={guest} key={index} />
             ))}
         </ul>
     );
@@ -73,12 +73,10 @@ function GuestLine(props) {
     return (
         <li className="list-group-item d-flex justify-content-between lh-condensed">
             <div>
-                <h6 className="my-0">{props.guest.email}</h6>
+                <strong className="my-0">{props.guest.email}</strong>
             </div>
-            <strong className="text-success"> 
-                {props.guest.status === 1 && '\u2714'}
-                {props.guest.status === 0 && '\u2753'}  
-                {props.guest.status === -1 && '\u2718'}
+            <strong className="text-success">
+                \u2714
             </strong>
         </li>
     );
@@ -91,51 +89,64 @@ var oReq = new XMLHttpRequest();
 oReq.onload = ajaxSuccess;
 
 
-function GuestAdd(props) {
-    const [ email, setEmail] = useState("");
+function RSVP(props) {
+    const [coming, setComing] = useState(false);
 
-    function SubmitGuest(event) {
+    return (
+        coming ?
+            (<div><GuestAdd addGuest={props.addGuest} />
+                <button className="btn btn-secondary" onClick={() => { setComing(false) }} > Cancel </button>
+            </div>) :
+            (<button className="btn btn-primary" onClick={() => { setComing(true); }}> RSVP </button>)
+    );
+}
+
+function GuestAdd(props) {
+
+    const [guest, setGuest] = useState({ name: "", email: "", status: 0 });
+
+    function SubmitGuest( guestStatus ) {
 
         // Here, we pass this email string to the parent component.
-        props.addGuest(email);
-        
+        guest.status = guestStatus; // I think this will be okay becaue I setGuest() below.
+        props.addGuest(guest);
+
         let oFormElement = event.target;
         let formData = new FormData(oFormElement);
-        for ( let value of formData.values()) {
+        for (let value of formData.values()) {
             console.log(value);
         }
-        oReq.open("post", guestPostRoute); //oFormElement.action
+        oReq.open("post", guestPostRoute);
         oReq.send(formData);
-        setEmail("");       // clear the input box. 
+        setGuest({name:"", email:"", status:0});       // clear the input box. 
         event.preventDefault();
     }
 
     function handleChange(event) {
-        let newEmail = event.target.value;      // pull out the "value" attribute. 
-        setEmail(newEmail);
+        const { name, value } = event.target;
+        setGuest({ ...guest, [name]: value });
     }
 
+
+
     return (
-        // for some reason, this is enctype="multipart/form-data".  Figure out why. 
-        <form className="card p-2 mb-2" onSubmit={SubmitGuest} >
+        <form className="card p-2 mb-2" >
             <div className="input-group">
-                <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
-                <div className="input-group-append" />
+
+                {(guest.email === "") ?
+                    (<input className="" name="email" onChange={handleChange} value={guest.email} placeholder="Enter your email" />) :
+                    (<div>
+                        <h3> mikeThielvoldt@gmail.com</h3>
+                        <button className="btn btn-secondary" onClick={() => { setComing(false) }} > That't not me </button>
+                    </div>)}
+
+                <input className="" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
+                <button className="btn btn-primary mb-2" onClick={() => {SubmitGuest(1);}} name="status" value="1">I'm coming!</button>
+                <button className="btn btn-secondary" onClick={() => {SubmitGuest(-1);}} name="status" value="-1">Can't make it</button>
             </div>
-            <input type="submit" className="btn btn-secondary" value="Add Guests" />
         </form>
-    );
+    )
 }
 
-function SendInvites(props) {
-    return (
-        <div>
-            <button className="btn btn-secondary">Send invitations</button>
-            <div>
-                <small className="text-muted">to new guests only</small>
-            </div>
-        </div>
-    );
-}
 
 

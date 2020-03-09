@@ -21,6 +21,15 @@
     z-index:-1;
   }
 
+  .list-group {
+    border-color: white;
+  }
+
+  .list-group-item {
+    background-color: rgba(0,0,0,0.3); /* Black background with opacity */;
+    font-weight: 100;
+  }
+
 
   footer {
     font-family: "Source Sans Pro", sans-serif;
