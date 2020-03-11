@@ -5,8 +5,7 @@ const useEffect = React.useEffect;
 
 const thisScript = $("#guest-list-script");
 const meetId = thisScript.attr("meetup-id");
-const guestPostRoute = "/guest/" + meetId;
-const guestListRoute = "/guestlist/" + meetId + ".json";
+const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
 
 const rootElement = document.getElementById("guest-list");
@@ -34,12 +33,12 @@ function App() {
         console.log(newGuest);
 
         // Check to see if this email has been entered before (case-insensitive match)
-        const hasMatch = guests.some((guest) => guest.email.toUpperCase() === newGuest.email.toUpperCase());
+        const hasMatch = guests.some((guest) => guest.name.toUpperCase() === newGuest.name.toUpperCase());
 
         if (hasMatch) {
             console.log("email matches one previously entered.");
         } else {
-            setGuests([...guests, newGuest ]);
+            setGuests([...guests, newGuest]);
         }
     }
 
@@ -64,7 +63,7 @@ function GuestList(props) {
     return (
         <ul className="list-group mb-3">
             {props.guests.map((guest, index) => (
-                props.guests.status && <GuestLine guest={guest} key={index} />
+                guest.status && <GuestLine guest={guest} key={index} />
             ))}
         </ul>
     );
@@ -73,21 +72,15 @@ function GuestLine(props) {
     return (
         <li className="list-group-item d-flex justify-content-between lh-condensed">
             <div>
-                <strong className="my-0">{props.guest.email}</strong>
+                <strong className="my-0">{props.guest.name}</strong>
             </div>
-            <strong className="text-success">
-                \u2714
+            <strong className="text-success"> 
+                {props.guest.status === 2 && '\u2714'}
+                {props.guest.status === 1 && '\u2753'}  
             </strong>
         </li>
     );
 }
-
-function ajaxSuccess() {
-    console.log(this.responseText);
-}
-var oReq = new XMLHttpRequest();
-oReq.onload = ajaxSuccess;
-
 
 function RSVP(props) {
     const [coming, setComing] = useState(false);
@@ -101,25 +94,25 @@ function RSVP(props) {
     );
 }
 
+function ajaxSuccess() {
+    console.log(this.responseText);
+}
+var xhr = new XMLHttpRequest();
+xhr.open("post", guestListRoute);
+xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+xhr.onload = ajaxSuccess;
+
 function GuestAdd(props) {
 
     const [guest, setGuest] = useState({ name: "", email: "", status: 0 });
 
-    function SubmitGuest( guestStatus ) {
-
-        // Here, we pass this email string to the parent component.
-        guest.status = guestStatus; // I think this will be okay becaue I setGuest() below.
+    function submitGuest(newStatus) {
+        //event.preventDefault();       // don't need this because buttons have type="button"
+        guest.status = newStatus;
+        
+        xhr.send( JSON.stringify(guest) );
         props.addGuest(guest);
-
-        let oFormElement = event.target;
-        let formData = new FormData(oFormElement);
-        for (let value of formData.values()) {
-            console.log(value);
-        }
-        oReq.open("post", guestPostRoute);
-        oReq.send(formData);
-        setGuest({name:"", email:"", status:0});       // clear the input box. 
-        event.preventDefault();
+        setGuest({ name: "", email: "", status: 0 });       // clear the input box. 
     }
 
     function handleChange(event) {
@@ -127,26 +120,18 @@ function GuestAdd(props) {
         setGuest({ ...guest, [name]: value });
     }
 
-
-
     return (
-        <form className="card p-2 mb-2" >
+        <form className="card p-2 mb-2">
             <div className="input-group">
-
-                {(guest.email === "") ?
-                    (<input className="" name="email" onChange={handleChange} value={guest.email} placeholder="Enter your email" />) :
-                    (<div>
-                        <h3> mikeThielvoldt@gmail.com</h3>
-                        <button className="btn btn-secondary" onClick={() => { setComing(false) }} > That't not me </button>
-                    </div>)}
-
-                <input className="" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
-                <button className="btn btn-primary mb-2" onClick={() => {SubmitGuest(1);}} name="status" value="1">I'm coming!</button>
-                <button className="btn btn-secondary" onClick={() => {SubmitGuest(-1);}} name="status" value="-1">Can't make it</button>
+                <small className="text-muted">For event notifications only</small>
+                <input type="email" className="" name="email" onChange={handleChange} value={guest.email} placeholder="Your email (optional)" />
+                <small className="text-muted">This is what other guests will see</small>
+                <input type="text" className="" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
+                <input type="hidden" name="status" value={guest.status} />
+                <button type="button" className="btn btn-primary mb-2" onClick={() => submitGuest(2)}>I'm in!</button>
+                <button type="button" className="btn btn-outline-primary mb-2" onClick={() => submitGuest(1)}>Maybe</button>
+                <button type="button" className="btn btn-secondary mb-2" onClick={() => submitGuest(-1)}>Can't</button>
             </div>
         </form>
     )
 }
-
-
-

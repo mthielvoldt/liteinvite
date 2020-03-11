@@ -5,8 +5,8 @@ const useEffect = React.useEffect;
 
 const thisScript = $("#guest-list-script");
 const meetId = thisScript.attr("meetup-id");
-const guestPostRoute = "/guest/" + meetId;
-const guestListRoute = "/guestlist/" + meetId + ".json";
+const guestPostRoute = "/events/" + meetId + "/guests-save";
+const guestListRoute = "/events/" + meetId + "/guests-full";
 console.log("meetId: " + meetId);
 
 const rootElement = document.getElementById("guest-list");
@@ -30,15 +30,15 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
-    function addGuest(newGuestEmail) { 
+    function addGuest(newGuestEmail) {
 
         // Check to see if this email has been entered before (case-insensitive match)
-        const hasMatch = guests.some( (guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase() );
+        const hasMatch = guests.some((guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase());
 
         if (hasMatch) {
             console.log("email matches one previously entered.");
         } else {
-            setGuests( [...guests, {email: newGuestEmail, status: 0}] );
+            setGuests([...guests, { email: newGuestEmail, status: 0 }]);
         }
     }
 
@@ -73,13 +73,14 @@ function GuestLine(props) {
     return (
         <li className="list-group-item d-flex justify-content-between lh-condensed">
             <div>
-                <h6 className="my-0">{props.guest.email}</h6>
+                <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
             </div>
-            <strong className="text-success"> 
-                {props.guest.status === 1 && '\u2714'}
-                {props.guest.status === 0 && '\u2753'}  
-                {props.guest.status === -1 && '\u2718'}
-            </strong>
+
+                {props.guest.status === 2 && (<h5 className="text-success">Coming</h5>)}
+                {props.guest.status === 1 && (<h5 >Maybe</h5>)}
+                {props.guest.status === 0 && (<h5 >No RSVP</h5>)}
+                {props.guest.status === -1 && (<h5>'\u2718'</h5>)}
+
         </li>
     );
 }
@@ -92,16 +93,16 @@ oReq.onload = ajaxSuccess;
 
 
 function GuestAdd(props) {
-    const [ email, setEmail] = useState("");
+    const [email, setEmail] = useState("");
 
     function SubmitGuest(event) {
 
         // Here, we pass this email string to the parent component.
         props.addGuest(email);
-        
+
         let oFormElement = event.target;
         let formData = new FormData(oFormElement);
-        for ( let value of formData.values()) {
+        for (let value of formData.values()) {
             console.log(value);
         }
         oReq.open("post", guestPostRoute); //oFormElement.action
