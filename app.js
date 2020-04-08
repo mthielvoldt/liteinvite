@@ -73,15 +73,24 @@ passport.deserializeUser(User.deserializeUser());
 let message = "";
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
 
-app.get('/', function (req, res) {
-    if (req.isAuthenticated()) {
-        let active_user = req.user;
+function logReq(req) {
+    if (req.user == null) {
+        console.log( req.method, req.url, ": no user" );
+    } else {
+        console.log( req.method, req.url, ":", req.user.name, ":", req.user._id);
+    }
+}
 
-        Meetup.find({ _id: { $in: active_user.meetups } }, (err, foundMeetups) => {
+app.get('/', function (req, res) {
+    logReq(req);
+    if (req.isAuthenticated()) {
+        let user = req.user;
+
+        Meetup.find({ _id: { $in: user.meetups } }, (err, foundMeetups) => {
             if (err) {
                 console.log(err);
             }
-            res.render("home", { user: active_user, meetups: foundMeetups });
+            res.render("home", { user: user, meetups: foundMeetups });
         });
     }
     else {
@@ -90,26 +99,29 @@ app.get('/', function (req, res) {
 });
 
 app.get('/login', function (req, res) {
+    logReq(req);
     res.render("login");
 });
 
 app.get('/logout', function (req, res) {
+    logReq(req);
     req.logout();
     res.redirect('/');
 });
 
 app.get('/register', function (req, res) {
+    logReq(req);
     res.render("register");
 });
 
 // The main edit page, for users that own the event only. 
 app.get('/events/:meetId/edit', function (req, res) {
-    let user = req.user;
-    console.log(user._id);
+    logReq(req);
 
     if (!req.isAuthenticated()) {
         res.sendStatus(401);    // Unauthorized: please sign in to access this. 
     } else {
+        let user = req.user;
         Meetup.findById(req.params.meetId, (err, foundMeetup) => {
             if (err) { console.log(err); }
             if (foundMeetup == null) {
@@ -129,6 +141,7 @@ app.get('/events/:meetId/edit', function (req, res) {
 
 // page for viewing event.  Does not require auth.  Optionally includes guest-id parameter. 
 app.get('/events/:meetId', function (req, res) {
+    logReq(req);
     Meetup.findById(req.params.meetId, (err, foundMeetup) => {
         if (err) { console.log(err); }
         if (foundMeetup == null) {
@@ -149,7 +162,7 @@ app.get('/events/:meetId', function (req, res) {
 
 // Gets the event's full guest-list, containing names, email and RSVP status.  Only accessible by event owner
 app.get('/events/:meetId/guests-full', function (req, res) {
-
+    logReq(req);
     if (!req.isAuthenticated()) {
         res.status(403).send("please sign in to view full guest-list");
         return;
@@ -174,7 +187,7 @@ app.get('/events/:meetId/guests-full', function (req, res) {
 
 // partial guest-list.  No auth required for this, just a valid event-id. 
 app.get('/events/:meetId/guests', function (req, res) {
-
+    logReq(req);
     Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) console.log(err);
 
@@ -194,6 +207,7 @@ app.get('/events/:meetId/guests', function (req, res) {
 
 // creates a new event
 app.get('/create', function (req, res) {
+    logReq(req);
     if (!req.isAuthenticated()) {
         res.redirect('/login');
         return;
@@ -214,6 +228,7 @@ app.get('/create', function (req, res) {
 });
 
 app.get('/delete/:meetId', function (req, res) {
+    logReq(req);
     let meetId = req.params.meetId;
     let active_user = req.user;
     // remove the meetupId from the user's array of meetups. 
@@ -236,6 +251,7 @@ app.get('/delete/:meetId', function (req, res) {
 
 // creates new guest associated with specified event. 
 app.post('/events/:meetId/guests', function (req, res) {
+    logReq(req);
     let meetId = req.params.meetId;
     let newGuest = req.body;
     res.send("create a new guest: " + JSON.stringify(newGuest) + " in event: " + meetId);
@@ -261,8 +277,9 @@ function guestsEqual(guestA, guestB) {
     );
 }
 
-// create a new event
+// edit event details
 app.post('/events/:meetId', function (req, res) {
+    logReq(req);
     Meetup.findById(req.params.meetId, (err, foundMeetup) => {
         if (err) {
             console.log(err);
@@ -276,6 +293,7 @@ app.post('/events/:meetId', function (req, res) {
 });
 
 app.post('/events/:meetId/image', function (req, res) {
+    logReq(req);
     upload.single('meetupImage')(req, res, function (err) {
         if (err) {
             console.log(err.message);
@@ -312,6 +330,7 @@ app.post('/events/:meetId/image', function (req, res) {
 
 // This is the event organizer adding guests. 
 app.post('/events/:meetId/guests-save', upload.none(), function (req, res, next) {
+    logReq(req);
 
     // add authentication check
     // add check that user owns this event. 
@@ -324,7 +343,7 @@ app.post('/events/:meetId/guests-save', upload.none(), function (req, res, next)
         if (meetup.guests.some((guest) => guestsEqual(guest, newGuest))) {
             console.log("guest already associated with this meetup.")
         } else {
-            meetup.guests.push({ id: newGuest._id, status: 0 });
+            meetup.guests.push({ id: newGuest._id, status: 0 });    // XXX newGuest not defined
             meetup.save();
             console.log("added guest to meetup");
         }
@@ -336,7 +355,7 @@ app.post('/events/:meetId/guests-save', upload.none(), function (req, res, next)
     if (active_user.guests.some((guest) => guestsEqual(guest, newGuest))) {
         console.log("guest already associated with this user.")
     } else {
-        active_user.guests.push(newGuest);
+        active_user.guests.push(newGuest);  //XXX newGuest not defined
         active_user.save();
         console.log("added guest to user")
     }
@@ -344,6 +363,7 @@ app.post('/events/:meetId/guests-save', upload.none(), function (req, res, next)
 });
 
 app.post('/register', function (req, res) {
+    logReq(req);
 
     //console.log(req.body); // this seems like a security issue. It prints the password.
     User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
