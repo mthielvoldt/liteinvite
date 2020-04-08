@@ -11,6 +11,11 @@
     position: relative;
   }
 
+  img {
+    text-align: center;
+    line-height: 225px;
+  }
+
   p {
     font-size: 1.3rem;
   }

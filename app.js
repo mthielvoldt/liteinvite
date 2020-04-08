@@ -5,7 +5,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const upload = multer({ dest: 'public/images/', limits: { fileSize: 10000000, fieldNameSize: 1000 } });
 const fs = require('fs');
 
 // user auth packages (3)
@@ -119,7 +118,7 @@ app.get('/events/:meetId/edit', function (req, res) {
     logReq(req);
 
     if (!req.isAuthenticated()) {
-        res.sendStatus(401);    // Unauthorized: please sign in to access this. 
+        res.status(401).render("login");    // Unauthorized: please sign in to access this. 
     } else {
         let user = req.user;
         Meetup.findById(req.params.meetId, (err, foundMeetup) => {
@@ -292,40 +291,20 @@ app.post('/events/:meetId', function (req, res) {
     });
 });
 
+// configure the upload to use the public/images dir and the meetId as the filename. 
+const storage = multer.diskStorage( { destination: 'public/images/', filename: (req, file, cb) => {
+    cb(null, req.params.meetId) } });
+const upload = multer({ storage:storage, limits: { fileSize: 10000000, fieldNameSize: 1000 } });
+
 app.post('/events/:meetId/image', function (req, res) {
     logReq(req);
     upload.single('meetupImage')(req, res, function (err) {
         if (err) {
             console.log(err.message);
             message = "Error: " + err.message;  // display this message
-        } else {
-            updateImageLink();
-        }
+        } 
         res.redirect('/events/' + req.params.meetId + '/edit');
     });
-
-    function updateImageLink() {
-        Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            // delete the old image if it isn't the default image. 
-            if (foundMeetup.image != defaultImage) {
-                let oldFile = "public/images/" + foundMeetup.image;
-                fs.unlink(oldFile, (err) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log('successfully deleted: ' + oldFile);
-                    }
-                });
-            }
-            foundMeetup.image = req.file.filename;
-            console.log("updated meetup image link");
-            foundMeetup.save();
-        });
-    }
 });
 
 // This is the event organizer adding guests. 
