@@ -3,10 +3,12 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const meetId = $("#meetup-id").text();
-const guestPostRoute = "/events/" + meetId + "/guests-save";
-const guestListRoute = "/events/" + meetId + "/guests-full";
-const detailsGetRoute = "/events/" + meetId + "/details";
+const detailsRoute = "/events/" + meetId + "/details";
 console.log("From details-edit: meetId=" + meetId);
+
+const xhr_load = new XMLHttpRequest();
+const xhr_save = new XMLHttpRequest();
+
 
 const rootElement = document.getElementById("details-edit");
 ReactDOM.render(
@@ -22,12 +24,14 @@ function App() {
     const [details, setDetails] = useState({ name: "", desc: "" });
     const [saved, setSaved] = useState(false);
 
-    const xhr = new XMLHttpRequest();
-    xhr.onload = () => { setDetails(JSON.parse(xhr.response)) };
+    xhr_load.onload = () => { setDetails(JSON.parse(xhr_load.response)); };
+    xhr_save.onload = () => { 
+        if (xhr_save.status === 200) setSaved(true); };
+    
 
     useEffect(() => {
-        xhr.open("get", detailsGetRoute);
-        xhr.send();
+        xhr_load.open("get", detailsRoute);
+        xhr_load.send();
     }, []);
 
     function handleChange(event) {
@@ -39,9 +43,12 @@ function App() {
         clearTimeout(timer);
         setSaved(false);
         timer = setTimeout(putDetails, 1000);
+
         function putDetails() {
             console.log(newDetails);
-            setSaved(true);
+            xhr_save.open("PUT", detailsRoute);
+            xhr_save.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr_save.send(JSON.stringify(newDetails));
         }
     }
 
