@@ -37,6 +37,11 @@
     color: white;
   }
 
+  .input-group .custom-file {
+    flex: 0 1 auto;
+    width: 40%;
+  }
+
 
   footer {
     font-family: "Source Sans Pro", sans-serif;
@@ -73,7 +78,6 @@
     padding: 10px 15px;
     margin: 0 auto 10px auto;
     display: block;
-    /* text-align: center; */
     font-size: 18px;
     font-weight: 300;
   }
