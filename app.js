@@ -138,6 +138,23 @@ app.get('/events/:meetId/edit', function (req, res) {
     }
 });
 
+// Get the event details 
+app.get('/events/:meetId/details', function (req, res) {
+    logReq(req);
+    Meetup.findById(req.params.meetId, (err, foundMeetup) => {
+        if (err) { console.log(err); }
+        if (foundMeetup == null) {
+            console.log("couldn't find meetId: " + req.params.meetId)
+            res.status(404).send("Coudn't find that event");    // not found. 
+        } else {
+            const {name, desc} = foundMeetup;
+            //const details = Object.assign({}, foundMeetup, {});
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify({name, desc}));
+        }
+    });
+});
+
 // page for viewing event.  Does not require auth.  Optionally includes guest-id parameter. 
 app.get('/events/:meetId', function (req, res) {
     logReq(req);

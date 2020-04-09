@@ -30,14 +30,11 @@
     z-index:-1;
   }
 
-  .list-group {
-    border-color: white;
-  }
-
-  .list-group-item {
+  .event-item {
     background-color: rgba(0,0,0,0.3); /* Black background with opacity */;
     font-weight: 700;
     border-color: black;
+    color: white;
   }
 
 
@@ -59,15 +56,17 @@
     margin-top: 5%;
   }
   
+  .auth-input {
+    border: 1px solid rgba(136, 136, 136, 0.6);
+    background-color: rgba(136, 136, 136, 0.2);
+  }
   
   form {
     padding: 20px 0;
     position: relative;
   }
   
-  form input {
-    border: 1px solid rgba(136, 136, 136, 0.6);
-    background-color: rgba(136, 136, 136, 0.2);
+  input {
     width: 100%;
     border-radius: 3px;
     font-family: "Source Sans Pro", sans-serif;

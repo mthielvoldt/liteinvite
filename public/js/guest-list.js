@@ -3,8 +3,7 @@
 const useState = React.useState;
 const useEffect = React.useEffect;
 
-const thisScript = $("#guest-list-script");
-const meetId = thisScript.attr("meetup-id");
+const meetId = $("#meetup-id").text();
 const guestPostRoute = "/events/" + meetId + "/guests-save";
 const guestListRoute = "/events/" + meetId + "/guests-full";
 console.log("meetId: " + meetId);
@@ -71,7 +70,7 @@ function GuestList(props) {
 }
 function GuestLine(props) {
     return (
-        <li className="list-group-item d-flex justify-content-between lh-condensed">
+        <li className="event-item list-group-item d-flex justify-content-between lh-condensed">
             <div>
                 <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
             </div>
