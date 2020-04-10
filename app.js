@@ -148,24 +148,8 @@ app.get('/events/:meetId', function (req, res) {
 // Gets the event's full guest-list, containing names, email and RSVP status.  Only accessible by event owner
 app.get('/events/:meetId/guests-full', function (req, res) {
     logReq(req);
-    if (!req.isAuthenticated()) {
-        res.status(403).send("please sign in to view full guest-list");
-        return;
-    }
 
-    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
-        if (err) console.log(err);
-
-        if (foundMeetup == null) {
-            res.status(404).send("sorry, I can't find that event.");
-            return;
-        }
-        if (foundMeetup.owner.toString() !== req.user._id.toString()) {
-            res.status(403).send("Only an event organizer can view the full guest list.")
-            return;
-        }
-
-        console.log("guests for this meet: " + JSON.stringify(foundMeetup.guests));
+    authFindMeetup(req, res, (foundMeetup) => {
         res.json(foundMeetup.guests);
     });
 });
@@ -173,14 +157,8 @@ app.get('/events/:meetId/guests-full', function (req, res) {
 // partial guest-list.  No auth required for this, just a valid event-id. 
 app.get('/events/:meetId/guests', function (req, res) {
     logReq(req);
-    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
-        if (err) console.log(err);
 
-        if (foundMeetup == null) {
-            res.status(404).send("sorry, I can't find that event.");
-            return;
-        }
-
+    findMeetup(req, res, (foundMeetup) => {
         // only respond with the guests that are going, and only provide their nicknames. 
         let guestListPartial = foundMeetup.guests.filter((guest) => guest.status > 0);
         guestListPartial = guestListPartial.map((guest) => ({ name: guest.name, status: guest.status }));
@@ -198,8 +176,6 @@ app.get('/create', function (req, res) {
         return;
     }
     let user = req.user;
-    // add user authentication
-
     let newMeetup = new Meetup({ owner: user._id, name: "", image: defaultImage });
     user.meetups.push(newMeetup._id);
     newMeetup.save();
@@ -212,24 +188,32 @@ app.get('/create', function (req, res) {
         });
 });
 
-app.get('/delete/:meetId', function (req, res) {
+app.get('/events/:meetId/delete', function (req, res) {
     logReq(req);
-    let meetId = req.params.meetId;
-    let active_user = req.user;
-    // remove the meetupId from the user's array of meetups. 
-    let newMeetups = active_user.meetups.filter((value) => (value != meetId));
 
-    if ((active_user.meetups.length - newMeetups.length) !== 1) {
-        console.error("Meetup Deletion error");
+    authFindMeetup(req, res, (foundMeetup) => {
 
-    } else {
-        console.log("Deleted 1 meetup: " + meetId);
-        active_user.meetups = newMeetups;
+        let meetId = req.params.meetId;
+        let user = req.user;
 
-        Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
-            res.redirect('/');
-        });
-    }
+        // remove the meetupId from the user's array of meetups. 
+        let newMeetups = user.meetups.filter((value) => (value != meetId));
+
+        if ((user.meetups.length - newMeetups.length) !== 1) {
+            console.error("Meetup Deletion error");
+
+        } else {
+            console.log("Deleted 1 meetup: " + meetId);
+            user.meetups = newMeetups;
+            user.save();
+
+            Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
+                res.redirect('/');
+            });
+        }
+    });
+
+
 });
 
 ///////////////////////////// POST routes follow //////////////////////////////
