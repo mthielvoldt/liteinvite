@@ -71,14 +71,12 @@ passport.deserializeUser(User.deserializeUser());
 
 let message = "";
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
+const port = process.env.PORT || 3000;
 
-function logReq(req) {
-    if (req.user == null) {
-        console.log( req.method, req.url, ": no user" );
-    } else {
-        console.log( req.method, req.url, ":", req.user.name, ":", req.user._id);
-    }
-}
+
+app.listen(port, () => {
+    console.log("Listening on port " + port);
+});
 
 app.get('/', function (req, res) {
     logReq(req);
@@ -117,25 +115,10 @@ app.get('/register', function (req, res) {
 app.get('/events/:meetId/edit', function (req, res) {
     logReq(req);
 
-    if (!req.isAuthenticated()) {
-        res.status(401).render("login");    // Unauthorized: please sign in to access this. 
-    } else {
-        let user = req.user;
-        Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-            if (err) { console.log(err); }
-            if (foundMeetup == null) {
-                console.log("couldn't find meetId: " + req.params.meetId)
-                res.sendStatus(404);    // not found (can't find that meetup)
-            } else if (user._id.toString() !== foundMeetup.owner.toString()) {
-                console.log("user._id and meetup owner don't match.  user._id: " + user._id + " foundMeetup.owner: " + foundMeetup.owner);
-                res.sendStatus(403);    // forbidden (user is authenticated, but doesn't own this event)
-            } else {
-                res.render("edit", { meetup: foundMeetup, message: message });
-                message = "";
-            }
-
-        });
-    }
+    authFindMeetup(req, res, (foundMeetup)=> {
+        res.render("edit", { meetup: foundMeetup, message: message });
+        message = "";
+    });
 });
 
 // Get the event details 
@@ -286,41 +269,6 @@ app.post('/events/:meetId/guests', function (req, res) {
     });
 });
 
-function guestsEqual(guestA, guestB) {
-    return (
-        guestA.name === guestB.name ||
-        guestA.email === guestB.email
-    );
-}
-
-function findMeetup(req,res,cb) {
-    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
-        if (err) {
-            console.log("Error searching for meetup by Id.  meetID:" + req.params.meetId);
-            console.log(err); 
-            res.status(500).send("<h3>It's not you, it's us.</h3><p>We encountered an error while searching for that event.</p>");
-            return null;
-        }
-        if (foundMeetup == null) {
-            console.log("Meetup not found: " + req.params.meetId);
-            res.status(404).send("sorry, I can't find that event.");
-            return null;
-        }
-        cb(foundMeetup);
-    });
-}
-
-function authFindMeetup(req, res, cb) {   // asynch function returns a promise.
-
-    if (!req.isAuthenticated()) {
-        console.log("user not authenticated.");
-        res.status(403).send("please sign in to view full guest-list");
-        return null;
-    } else {
-        findMeetup(req,res,cb);
-    }
-}
-
 // edit event details
 app.put('/events/:meetId/details', function (req, res) {
     logReq(req);
@@ -408,7 +356,57 @@ app.post('/login', passport.authenticate('local', {
 }));
 
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log("Listening on port " + port);
-});
+///////////////////// Helper Functions ///////////////////////////////////
+
+function logReq(req) {
+    if (req.user == null) {
+        console.log( req.method, req.url, ": no user" );
+    } else {
+        console.log( req.method, req.url, ":", req.user.name, ":", req.user._id);
+    }
+}
+
+function guestsEqual(guestA, guestB) {
+    return (
+        guestA.name === guestB.name ||
+        guestA.email === guestB.email
+    );
+}
+
+function findMeetup(req,res,cb) {
+    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
+        if (err) {
+            console.log("ERROR  Error searching for meetup by Id.  meetID:" + req.params.meetId);
+            console.log("message:  " + err.message); 
+            console.log("reason:  " + err.reason);
+            res.status(500).send("<h3>It's not you, it's us.</h3><p>We encountered an error while searching for that event.</p>");
+            return null;
+        }
+        if (foundMeetup == null) {
+            console.log("NOT-FOUND  Meetup not found: " + req.params.meetId);
+            res.status(404).send("sorry, we can't find that event.");
+            return null;
+        }
+        cb(foundMeetup);
+    });
+}
+
+// checks user is authenticated, finds event, checks that user owns event. 
+function authFindMeetup(req, res, cb) {   
+
+    if (!req.isAuthenticated()) {
+        console.log("NO-AUTH  user not authenticated.");
+        res.status(401).render('login');
+        return null;
+    } else {
+        findMeetup(req,res,(foundMeetup)=> {
+            if (foundMeetup.owner.toString() !== req.user._id.toString()) {
+                console.log("*FORBIDDEN*  User does not own the meetup user:" + req.user._id + " meetId:" + req.params.meetId);
+                res.status(403).send('<h3>Forbidden</h3><p>Did you maybe sign in as a different user in another tab?</p><a href="/">Home</a>');
+                return null;
+            } else {
+                cb(foundMeetup);
+            }
+        });
+    }
+}
