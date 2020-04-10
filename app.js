@@ -69,7 +69,6 @@ passport.use(User.createStrategy());                // connect passport to the U
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-let message = "";
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
 const port = process.env.PORT || 3000;
 
@@ -115,46 +114,33 @@ app.get('/register', function (req, res) {
 app.get('/events/:meetId/edit', function (req, res) {
     logReq(req);
 
-    authFindMeetup(req, res, (foundMeetup)=> {
-        res.render("edit", { meetup: foundMeetup, message: message });
-        message = "";
+    authFindMeetup(req, res, (foundMeetup) => {
+        res.render("edit", { meetup: foundMeetup });
     });
 });
 
 // Get the event details 
 app.get('/events/:meetId/details', function (req, res) {
     logReq(req);
-    Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-        if (err) { console.log(err); }
-        if (foundMeetup == null) {
-            console.log("couldn't find meetId: " + req.params.meetId)
-            res.status(404).send("Coudn't find that event");    // not found. 
-        } else {
-            const {name, desc} = foundMeetup;
-            //const details = Object.assign({}, foundMeetup, {});
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify({name, desc}));
-        }
+
+    findMeetup(req, res, (foundMeetup) => {
+        const { name, desc } = foundMeetup;
+        //const details = Object.assign({}, foundMeetup, {});
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify({ name, desc }));
     });
 });
 
 // page for viewing event.  Does not require auth.  Optionally includes guest-id parameter. 
 app.get('/events/:meetId', function (req, res) {
     logReq(req);
-    Meetup.findById(req.params.meetId, (err, foundMeetup) => {
-        if (err) { console.log(err); }
-        if (foundMeetup == null) {
-            console.log("couldn't find meetId: " + req.params.meetId)
-            res.sendStatus(404);    // not found. 
-        } else {
-            if (req.query.guestid == null) {
-                res.render("event", { meetup: foundMeetup, message: message, guestEmail: "" });
-                message = "";
-            } else {
-                console.log(req.query.guestid);
-                res.sendStatus(200);
-            }
 
+    findMeetup(req, res, (foundMeetup) => {
+        if (req.query.guestid == null) {
+            res.render("event", { meetup: foundMeetup, guestEmail: "" });
+        } else {
+            console.log(req.query.guestid);
+            res.sendStatus(200);
         }
     });
 });
@@ -273,26 +259,28 @@ app.post('/events/:meetId/guests', function (req, res) {
 app.put('/events/:meetId/details', function (req, res) {
     logReq(req);
 
-    authFindMeetup(req,res, function(foundMeetup) {
+    authFindMeetup(req, res, function (foundMeetup) {
         Object.assign(foundMeetup, req.body);
         foundMeetup.save();
         res.status(200).send("changes saved to event " + foundMeetup._id);
-        
+
     });      // need to await this. 
 });
 
 // configure the upload to use the public/images dir and the meetId as the filename. 
-const storage = multer.diskStorage( { destination: 'public/images/', filename: (req, file, cb) => {
-    cb(null, req.params.meetId) } });
-const upload = multer({ storage:storage, limits: { fileSize: 10000000, fieldNameSize: 1000 } });
+const storage = multer.diskStorage({
+    destination: 'public/images/', filename: (req, file, cb) => {
+        cb(null, req.params.meetId)
+    }
+});
+const upload = multer({ storage: storage, limits: { fileSize: 10000000, fieldNameSize: 1000 } });
 
 app.post('/events/:meetId/image', function (req, res) {
     logReq(req);
     upload.single('meetupImage')(req, res, function (err) {
         if (err) {
             console.log(err.message);
-            message = "Error: " + err.message;  // display this message
-        } 
+        }
         res.redirect('/events/' + req.params.meetId + '/edit');
     });
 });
@@ -360,9 +348,9 @@ app.post('/login', passport.authenticate('local', {
 
 function logReq(req) {
     if (req.user == null) {
-        console.log( req.method, req.url, ": no user" );
+        console.log(req.method, req.url, ": no user");
     } else {
-        console.log( req.method, req.url, ":", req.user.name, ":", req.user._id);
+        console.log(req.method, req.url, ":", req.user.name, ":", req.user._id);
     }
 }
 
@@ -373,11 +361,11 @@ function guestsEqual(guestA, guestB) {
     );
 }
 
-function findMeetup(req,res,cb) {
+function findMeetup(req, res, cb) {
     Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) {
             console.log("ERROR  Error searching for meetup by Id.  meetID:" + req.params.meetId);
-            console.log("message:  " + err.message); 
+            console.log("message:  " + err.message);
             console.log("reason:  " + err.reason);
             res.status(500).send("<h3>It's not you, it's us.</h3><p>We encountered an error while searching for that event.</p>");
             return null;
@@ -392,14 +380,14 @@ function findMeetup(req,res,cb) {
 }
 
 // checks user is authenticated, finds event, checks that user owns event. 
-function authFindMeetup(req, res, cb) {   
+function authFindMeetup(req, res, cb) {
 
     if (!req.isAuthenticated()) {
         console.log("NO-AUTH  user not authenticated.");
         res.status(401).render('login');
         return null;
     } else {
-        findMeetup(req,res,(foundMeetup)=> {
+        findMeetup(req, res, (foundMeetup) => {
             if (foundMeetup.owner.toString() !== req.user._id.toString()) {
                 console.log("*FORBIDDEN*  User does not own the meetup user:" + req.user._id + " meetId:" + req.params.meetId);
                 res.status(403).send('<h3>Forbidden</h3><p>Did you maybe sign in as a different user in another tab?</p><a href="/">Home</a>');
