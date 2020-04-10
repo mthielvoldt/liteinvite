@@ -9,6 +9,7 @@ console.log("From details-edit: meetId=" + meetId);
 const xhr_load = new XMLHttpRequest();
 const xhr_save = new XMLHttpRequest();
 
+let timer;
 
 const rootElement = document.getElementById("details-edit");
 ReactDOM.render(
@@ -17,8 +18,6 @@ ReactDOM.render(
     </React.StrictMode>,
     rootElement
 );
-
-let timer;
 
 function App() {
     const [details, setDetails] = useState({ name: "", desc: "" });

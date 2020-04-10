@@ -225,8 +225,17 @@ app.post('/events/:meetId/guests', function (req, res) {
 
     authFindMeetup(req, res, (meetup) => {
         let meetId = req.params.meetId;
-        let newEmail = req.body.toString();
-        let newGuest = { email:newEmail };        // comes in as text/plain.
+        let newEmail = req.body.toString();     // comes in as text/plain.
+
+        let emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/
+
+        if (!emailRegex.test(newEmail)) { 
+            console.log("Invalid guest email address.")
+            res.status(400).send("Invalid email address");
+            return;
+        }
+
+        let newGuest = { email:newEmail, name:"", status:0};       
         console.log("meetup.guests", meetup.guests, "newGuest:", newGuest);
 
         // if this guest is already present, don't add to the array. 
@@ -242,56 +251,21 @@ app.post('/events/:meetId/guests', function (req, res) {
     });
 });
 
-// This is the event organizer adding guests. 
-app.post('/events/:meetId/guests-save', function (req, res) {
-    logReq(req);
-
-    // add authentication check
-    // add check that user owns this event. 
-
-    // add this guest's ID  to the meetup's guest-list. (if it isn't there)
-    Meetup.findById(req.params.meetId, function (err, meetup) {
-        if (err) { console.log(err); }
-
-        // if this guest is already present, don't add to the array. 
-        if (meetup.guests.some((guest) => guestsEqual(guest, newGuest))) {
-            console.log("guest already associated with this meetup.")
-        } else {
-            meetup.guests.push({ id: newGuest._id, status: 0 });    // XXX newGuest not defined
-            meetup.save();
-            console.log("added guest to meetup");
-        }
-    });
-
-    // add this guest's ID  to the user's guest-list (if it isn't there)
-    let active_user = req.user;
-
-    if (active_user.guests.some((guest) => guestsEqual(guest, newGuest))) {
-        console.log("guest already associated with this user.")
-    } else {
-        active_user.guests.push(newGuest);  //XXX newGuest not defined
-        active_user.save();
-        console.log("added guest to user")
-    }
-    res.status(200).send("guest saved");
-});
-
 app.delete('/events/:meetId/guests/:email', function (req,res) {
     logReq(req);
 
     authFindMeetup(req, res, (foundMeetup) => {
 
-        let guests = foundMeetup.guests; 
-        let oldLength = guests.length;
         let guestToDelete = { email: req.params.email };
 
         // remove the guest with the indicated email.
-        guests = guests.filter((guest) => guestsEqual(guest, guestToDelete));
+        let newGuests = foundMeetup.guests.filter((guest) => !guestsEqual(guest, guestToDelete));
 
-        if ( (oldLength - guests.length) !== 1 ) {
-            res.status(200).send("That guest was not found.  Nothing deleted.");
+        if ( (foundMeetup.guests.length - newGuests.length) !== 1 ) {
+            res.status(404).send("That guest was not found.  Nothing deleted.");
             return;
         } else {
+            foundMeetup.guests = newGuests;
             foundMeetup.save();
             res.status(200).send("Guest deleted: " + req.params.email);
         }

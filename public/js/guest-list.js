@@ -6,7 +6,7 @@ const useEffect = React.useEffect;
 const meetId = $("#meetup-id").text();
 const guestPostRoute = "/events/" + meetId + "/guests";
 const guestListRoute = "/events/" + meetId + "/guests-full";
-console.log("meetId: " + meetId);
+const guestDeleteRoute = "/events/" + meetId + "/guests/";
 
 const rootElement = document.getElementById("guest-list");
 ReactDOM.render(
@@ -18,6 +18,8 @@ ReactDOM.render(
 
 function App() {
     const [guests, setGuests] = useState([]);
+    const xhrDelete = new XMLHttpRequest();
+    xhrDelete.onload = () => { console.log(xhrDelete.responseText); };
 
     // run only once at page-load to populate the guest-list
     useEffect(() => {
@@ -41,10 +43,21 @@ function App() {
         }
     }
 
+    function deleteGuest(props) {
+        xhrDelete.open("DELETE", guestDeleteRoute + props.guest.email);
+        xhrDelete.send();
+        let newGuests = guests.filter( (guest, index) => (index !== props.id) );
+        setGuests(newGuests);
+    }
+
     return (
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
-            <GuestList guests={guests} />
+            <ul className="list-group mb-3">
+                {guests.map((guest, index) => (
+                    <GuestLine key={index} id={index} guest={guest} onDelete={deleteGuest} />
+                ))}
+            </ul>
             <GuestAdd addGuest={addGuest} />
             <SendInvites />
         </div>
@@ -59,20 +72,16 @@ function GuestHeader(props) {
         </h3>
     );
 }
-function GuestList(props) {
-    return (
-        <ul className="list-group mb-3">
-            {props.guests.map((guest, index) => (
-                <GuestLine guest={guest} key={index} />
-            ))}
-        </ul>
-    );
-}
+
 function GuestLine(props) {
+
     return (
         <li className="event-item list-group-item d-flex justify-content-between lh-condensed">
+            <button className="guest-delete-button" onClick={() => {props.onDelete(props);}} >Delete</button>
+            <div>
+                <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
+            </div>
 
-            <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
 
             {props.guest.status === 2 && (<h5 className="text-success">Coming</h5>)}
             {props.guest.status === 1 && (<h5 >Maybe</h5>)}
@@ -112,12 +121,9 @@ function GuestAdd(props) {
 
     return (
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
-        <form className="card p-2 mb-2" onSubmit={SubmitGuest} >
-            <div className="input-group">
-                <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
-                <div className="input-group-append" />
-            </div>
-            <input type="submit" className="btn btn-secondary" value="Add Guests" />
+        <form className="mb-2" onSubmit={SubmitGuest} >
+            <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
+            <span className="p-2">press [enter] to add guest.</span>
         </form>
     );
 }
@@ -127,7 +133,7 @@ function SendInvites(props) {
         <div>
             <button className="btn btn-secondary">Send invitations</button>
             <div>
-                <small className="text-muted">to new guests only</small>
+                <small>to new guests only</small>
             </div>
         </div>
     );
