@@ -4,7 +4,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const meetId = $("#meetup-id").text();
-const guestPostRoute = "/events/" + meetId + "/guests-save";
+const guestPostRoute = "/events/" + meetId + "/guests";
 const guestListRoute = "/events/" + meetId + "/guests-full";
 console.log("meetId: " + meetId);
 
@@ -71,14 +71,13 @@ function GuestList(props) {
 function GuestLine(props) {
     return (
         <li className="event-item list-group-item d-flex justify-content-between lh-condensed">
-            <div>
-                <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
-            </div>
 
-                {props.guest.status === 2 && (<h5 className="text-success">Coming</h5>)}
-                {props.guest.status === 1 && (<h5 >Maybe</h5>)}
-                {props.guest.status === 0 && (<h5 >No RSVP</h5>)}
-                {props.guest.status === -1 && (<h5>'\u2718'</h5>)}
+            <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
+
+            {props.guest.status === 2 && (<h5 className="text-success">Coming</h5>)}
+            {props.guest.status === 1 && (<h5 >Maybe</h5>)}
+            {props.guest.status === 0 && (<h5 >No RSVP</h5>)}
+            {props.guest.status === -1 && (<h5>'\u2718'</h5>)}
 
         </li>
     );
@@ -99,13 +98,9 @@ function GuestAdd(props) {
         // Here, we pass this email string to the parent component.
         props.addGuest(email);
 
-        let oFormElement = event.target;
-        let formData = new FormData(oFormElement);
-        for (let value of formData.values()) {
-            console.log(value);
-        }
-        oReq.open("post", guestPostRoute); //oFormElement.action
-        oReq.send(formData);
+        oReq.open("POST", guestPostRoute); //oFormElement.action
+        oReq.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
+        oReq.send(email);
         setEmail("");       // clear the input box. 
         event.preventDefault();
     }

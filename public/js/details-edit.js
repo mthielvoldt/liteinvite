@@ -52,7 +52,6 @@ function App() {
         }
     }
 
-
     return (
         <div>
             <form className="App">
@@ -79,12 +78,6 @@ function App() {
 
 function Detail(props) {
 
-    function changeDetail(event) {
-        console.log("hey");
-        props.change(event);
-        //setDetails( Object.assign( details, {[detail]:newContent} ));
-        //setDetails( { ...details, [detail]: newContent } );
-    }
     return (
         <div>
             <h5>{props.label}</h5>
