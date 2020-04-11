@@ -89,7 +89,7 @@ function Detail(props) {
                 type="text"
                 onChange={props.change}
                 value={props.content}
-                className="event-detail event-detail-input" />
+                className="event-detail event-detail-single" />
         </div>
     );
 }
@@ -104,7 +104,7 @@ function Description(props) {
                 value={props.content}
                 onChange={props.change}
                 rows="7"
-                className="event-detail event-detail-input" />
+                className="event-detail event-detail-single" />
         </div>
     );
 }

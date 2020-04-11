@@ -16,6 +16,9 @@
     line-height: 225px;
   }
 
+  h1, .text-shadow {
+    text-shadow: 2px 2px 4px black;
+  }
   h5 {
     margin-bottom: .2rem;
   }
@@ -45,7 +48,7 @@
     padding: .5rem;
   }
 
-  .event-detail-input {
+  .event-detail-single {
     border-radius: .25rem;
     margin-bottom: .9rem;
     width: 100%;

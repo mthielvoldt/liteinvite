@@ -17,7 +17,7 @@ const app = express();
 // tells express where files that are sent to the client live.  This is where we put styles.css and any client-side scripts.
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));   // lets us access body items with . notation (eg req.body.item)
-app.use(bodyParser.text({type:"text/plain"}));
+app.use(bodyParser.text({ type: "text/plain" }));
 app.use(express.json({ inflate: true, strict: true, type: 'application/json' }))
 app.use(express.static('public'));
 
@@ -140,9 +140,9 @@ app.get('/events/:meetId', (req, res) => {
         let guestId = req.query.guest;
         let guestEmail = "";
         if (guestId != null) {
-            let guest = foundMeetup.guests.find( (guest)=>(guest._id.toString() == guestId));
+            let guest = foundMeetup.guests.find((guest) => (guest._id.toString() == guestId));
             guestEmail = guest.email;
-        } 
+        }
         res.render("event", { meetup: foundMeetup, guestEmail: guestEmail });
     });
 });
@@ -222,7 +222,7 @@ app.get('/events/:meetId/invites', (req, res) => {
     logReq(req);
 
     authFindMeetup(req, res, (meetup) => {
-        res.render('links', { meetId:meetup._id, guests: meetup.guests });
+        res.render('links', { meetId: meetup._id, guests: meetup.guests });
     });
 });
 
@@ -243,7 +243,7 @@ app.post('/events/:meetId/guests', function (req, res) {
             return;
         }
 
-        let newGuest = { email:newEmail, name:"", status:0, sent:0 };       
+        let newGuest = { email: newEmail, name: "", status: 0, sent: 0 };
         console.log("meetup.guests", meetup.guests, "newGuest:", newGuest);
 
         // if this guest is already present, don't add to the array. 
@@ -263,25 +263,21 @@ app.post('/events/:meetId/guests', function (req, res) {
 app.put('/events/:meetId/guests', (req, res) => {
     logReq(req);
 
-    //load the submitted data
-    let sentGuest = JSON.parse(req.body);
-    console.log(sentGuest);
+    console.log(req.body);
 
     // find the meetup
     findMeetup(req, res, (foundMeetup) => {
 
-        // TODO (Security): sanitize the other fields in sentGuest. 
-        // presently, we accept any and all fields present as long as the email is valid. 
+        let sentGuest = filterFields(req.body); // automatically parsed
+        if (sentGuest == null) return;
+        console.log(sentGuest);
 
         // validate the email with regex. 
-        if( !validEmail(sentGuest.email) ) {
-            res.status(400).send("Invalid Email: guest not updated");
-            return;
-        }
-        sentGuest = Object.assign({sent:1}, sentGuest); // include "sent" field if it isn't there. 
- 
+
+        sentGuest = Object.assign({ sent: 1 }, sentGuest); // include "sent" field if it isn't there. 
+
         // does the meetup's guest list conain this email?
-        let index = foundMeetup.guests.findIndex( (guest) => (guestsEqual(guest, sentGuest)));
+        let index = foundMeetup.guests.findIndex((guest) => (guestsEqual(guest, sentGuest)));
 
         if (index > -1) {
             // yes: overwrite that element. 
@@ -295,6 +291,25 @@ app.put('/events/:meetId/guests', (req, res) => {
         console.log("updated guest list: ", foundMeetup.guests);
         foundMeetup.save();
     });
+
+    // Read only certain fields from input object and validate each one. (object destructuring)
+    function filterFields({ email, name, status }) {
+        const rxName = /^[A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+([\ A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+)*/;
+
+        if (!validEmail(email)) {
+            res.status(400).send("Invalid email: guest not updated");
+            return null;
+        }
+        if (!rxName.test(name)) {
+            res.status(400).send("Invalid name: guest not updated");
+            return null;
+        }
+        if ((status !== -1) && (status !== 0) && (status !== 1) && (status !== 2)) {
+            res.status(400).send("Invalid 'status' field: guest not updated");
+            return null;
+        }
+        return { email, name, status };
+    }
 });
 
 app.delete('/events/:meetId/guests/:email', (req, res) => {
@@ -307,7 +322,7 @@ app.delete('/events/:meetId/guests/:email', (req, res) => {
         // remove the guest with the indicated email.
         let newGuests = foundMeetup.guests.filter((guest) => !guestsEqual(guest, guestToDelete));
 
-        if ( (foundMeetup.guests.length - newGuests.length) !== 1 ) {
+        if ((foundMeetup.guests.length - newGuests.length) !== 1) {
             res.status(404).send("That guest was not found.  Nothing deleted.");
             return;
         } else {
@@ -428,7 +443,7 @@ function authFindMeetup(req, res, cb) {
     }
 }
 
-function validEmail( str ) {
+function validEmail(str) {
     let emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
     return emailRegex.test(str);
 }

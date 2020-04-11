@@ -40,7 +40,7 @@ function App() {
         if (hasMatch) {
             console.log("email matches one previously entered.");
         } else {
-            setGuests([...guests, { email: newGuestEmail, status: 0 }]);
+            setGuests([...guests, { email: newGuestEmail, status: 0, sent: 0 }]);
         }
     }
 
@@ -68,7 +68,7 @@ function App() {
 function GuestHeader(props) {
     return (
         <h3 className="d-flex justify-content-between align-items-center mb-3">
-            <span>Guest List</span>
+            <span className="text-shadow">Guest List</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
         </h3>
     );
@@ -91,14 +91,14 @@ function GuestLine(props) {
 
             <div className="guest-text guest-status" >
                 {props.guest.sent === 0 && ('-')}
-                {props.guest.sent === 1 && ('email sent')}
+                {props.guest.sent === 1 && ('invited')}
             </div>
 
             <div className="guest-text guest-status" >
                 {props.guest.status === 2 && (<span className="text-success">Coming</span>)}
-                {props.guest.status === 1 && ('Maybe')}
-                {props.guest.status === 0 && ('No RSVP')}
-                {props.guest.status === -1 && ('\u2718')}
+                {props.guest.status === 1 && (<span className="text-warning">Maybe</span>)}
+                {props.guest.status === 0 && (<span className="text-muted">No RSVP</span>)}
+                {props.guest.status === -1 && (<span className="text-danger">Nope</span>)}
             </div>
 
         </li>

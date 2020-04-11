@@ -3,8 +3,8 @@
 const useState = React.useState;
 const useEffect = React.useEffect;
 
-const guestEmail =  document.getElementById("guest-email").innerText;
-const meetId =      document.getElementById("meetup-id").innerText;
+const guestEmail = document.getElementById("guest-email").innerText;
+const meetId = document.getElementById("meetup-id").innerText;
 const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
 
@@ -53,10 +53,10 @@ function App() {
 
 function GuestHeader(props) {
     return (
-        <h3 className="d-flex justify-content-between align-items-center mb-3">
-            <span>Who's Coming:</span>
+        <h2 className="d-flex justify-content-between align-items-center mb-3">
+            <span className="text-shadow">Who's Coming:</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
-        </h3>
+        </h2>
     );
 }
 function GuestList(props) {
@@ -68,16 +68,17 @@ function GuestList(props) {
         </ul>
     );
 }
+
 function GuestLine(props) {
     return (
-        <li className="list-group-item d-flex justify-content-between lh-condensed">
-            <div>
-                <strong className="my-0">{props.guest.name}</strong>
+        <li className="event-detail list-group-item d-flex lh-condensed">
+            <div className="guest-text guest-email">
+                <strong >{props.guest.name}</strong>
             </div>
-            <strong className="text-success"> 
-                {props.guest.status === 2 && '\u2714'}
-                {props.guest.status === 1 && '\u2753'}  
-            </strong>
+            <div className="guest-text guest-status text-success">
+                    {props.guest.status === 2 && <h4>{'\u2714'}</h4>}
+                    {props.guest.status === 1 && (<h4 className="text-warning">?</h4>)}
+            </div>
         </li>
     );
 }
@@ -98,7 +99,6 @@ function ajaxSuccess() {
     console.log(this.responseText);
 }
 var xhrGuest = new XMLHttpRequest();
-xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
 xhrGuest.onload = ajaxSuccess;
 
 function GuestAdd(props) {
@@ -109,7 +109,8 @@ function GuestAdd(props) {
         //event.preventDefault();       // don't need this because buttons have type="button"
         guest.status = newStatus;
         xhrGuest.open("PUT", guestListRoute);
-        xhrGuest.send( JSON.stringify(guest) );
+        xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
+        xhrGuest.send(JSON.stringify(guest));
         props.addGuest(guest);
     }
 
