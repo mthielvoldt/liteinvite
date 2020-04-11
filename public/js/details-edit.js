@@ -4,6 +4,7 @@ const useEffect = React.useEffect;
 
 const meetId = $("#meetup-id").text();
 const detailsRoute = "/events/" + meetId + "/details";
+const imageRoute = "/events/" + meetId + "/image";
 console.log("From details-edit: meetId=" + meetId);
 
 const xhr_load = new XMLHttpRequest();
@@ -111,7 +112,7 @@ function Description(props) {
 function ImageSelect() {
 
     return (
-        <form id="upload-form" action="/events/<%=meetup._id%>/image" method="post" encType="multipart/form-data">
+        <form id="upload-form" action={imageRoute} method="post" encType="multipart/form-data">
             <div className="input-group mb-3">
                 <div className="custom-file">
                     <input

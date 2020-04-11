@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LiteInvite-invitations</title>
+</head>
+<body>
+    <h1>Here are your links. </h1>
+    <% guests.forEach(guest => { %>
+        <p> <a href="https://liteinvite.com/events/<%= meetId %>?guest=<%= guest._id %>" > <%= guest.email %> </a> </p>
+    <% }) %>
+</body>
+</html>

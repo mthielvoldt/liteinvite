@@ -7,6 +7,7 @@ const meetId = $("#meetup-id").text();
 const guestPostRoute = "/events/" + meetId + "/guests";
 const guestListRoute = "/events/" + meetId + "/guests-full";
 const guestDeleteRoute = "/events/" + meetId + "/guests/";
+const invitesRoute = "/events/" + meetId + "/invites";
 
 const rootElement = document.getElementById("guest-list");
 ReactDOM.render(
@@ -46,7 +47,7 @@ function App() {
     function deleteGuest(props) {
         xhrDelete.open("DELETE", guestDeleteRoute + props.guest.email);
         xhrDelete.send();
-        let newGuests = guests.filter( (guest, index) => (index !== props.id) );
+        let newGuests = guests.filter((guest, index) => (index !== props.id));
         setGuests(newGuests);
     }
 
@@ -76,21 +77,24 @@ function GuestHeader(props) {
 function GuestLine(props) {
 
     return (
-        <li className="event-detail
-            list-group-item 
-            d-flex 
-            lh-condensed" >
-        
-            <input 
-                type="image" 
-                src="/images/Orange_x.svg.png"  
-                className="guest-delete-button guest-text" 
-                onClick={() => {props.onDelete(props);}} />
+        <li className="event-detail list-group-item d-flex lh-condensed" >
+
+            <input
+                type="image"
+                src="/images/Orange_x.svg.png"
+                className="guest-delete-button guest-text"
+                onClick={() => { props.onDelete(props); }} />
+
             <div className="guest-text guest-email">
                 {props.guest.email}
             </div>
 
-            <div className="guest-text guest-rsvp" >
+            <div className="guest-text guest-status" >
+                {props.guest.sent === 0 && ('-')}
+                {props.guest.sent === 1 && ('email sent')}
+            </div>
+
+            <div className="guest-text guest-status" >
                 {props.guest.status === 2 && (<span className="text-success">Coming</span>)}
                 {props.guest.status === 1 && ('Maybe')}
                 {props.guest.status === 0 && ('No RSVP')}
@@ -131,11 +135,11 @@ function GuestAdd(props) {
     return (
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
         <form className="mb-2" onSubmit={SubmitGuest} >
-            <input 
-                name="email" 
-                type="email" 
-                onChange={handleChange} 
-                value={email} 
+            <input
+                name="email"
+                type="email"
+                onChange={handleChange}
+                value={email}
                 placeholder="Guest email"
                 className="guest-email-input" />
             <span className="p-2">press [enter] to add guest.</span>
@@ -146,7 +150,7 @@ function GuestAdd(props) {
 function SendInvites(props) {
     return (
         <div>
-            <button className="btn btn-secondary">Send invitations</button>
+            <a href={invitesRoute} className="btn btn-secondary">Send invitations</a>
             <div>
                 <small>to new guests only</small>
             </div>

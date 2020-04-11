@@ -3,8 +3,8 @@
 const useState = React.useState;
 const useEffect = React.useEffect;
 
-const thisScript = $("#guest-list-script");
-const meetId = thisScript.attr("meetup-id");
+const guestEmail =  document.getElementById("guest-email").innerText;
+const meetId =      document.getElementById("meetup-id").innerText;
 const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
 
@@ -97,22 +97,20 @@ function RSVP(props) {
 function ajaxSuccess() {
     console.log(this.responseText);
 }
-var xhr = new XMLHttpRequest();
-xhr.open("post", guestListRoute);
-xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-xhr.onload = ajaxSuccess;
+var xhrGuest = new XMLHttpRequest();
+xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
+xhrGuest.onload = ajaxSuccess;
 
 function GuestAdd(props) {
 
-    const [guest, setGuest] = useState({ name: "", email: "", status: 0 });
+    const [guest, setGuest] = useState({ name: "", email: guestEmail, status: 0 });
 
     function submitGuest(newStatus) {
         //event.preventDefault();       // don't need this because buttons have type="button"
         guest.status = newStatus;
-        
-        xhr.send( JSON.stringify(guest) );
+        xhrGuest.open("PUT", guestListRoute);
+        xhrGuest.send( JSON.stringify(guest) );
         props.addGuest(guest);
-        setGuest({ name: "", email: "", status: 0 });       // clear the input box. 
     }
 
     function handleChange(event) {
