@@ -76,17 +76,26 @@ function GuestHeader(props) {
 function GuestLine(props) {
 
     return (
-        <li className="event-item list-group-item d-flex justify-content-between lh-condensed">
-            <button className="guest-delete-button" onClick={() => {props.onDelete(props);}} >Delete</button>
-            <div>
-                <h5 className="my-0">{(props.guest.name) ? props.guest.name : props.guest.email}</h5>
+        <li className="event-detail
+            list-group-item 
+            d-flex 
+            lh-condensed" >
+        
+            <input 
+                type="image" 
+                src="/images/Orange_x.svg.png"  
+                className="guest-delete-button guest-text" 
+                onClick={() => {props.onDelete(props);}} />
+            <div className="guest-text guest-email">
+                {props.guest.email}
             </div>
 
-
-            {props.guest.status === 2 && (<h5 className="text-success">Coming</h5>)}
-            {props.guest.status === 1 && (<h5 >Maybe</h5>)}
-            {props.guest.status === 0 && (<h5 >No RSVP</h5>)}
-            {props.guest.status === -1 && (<h5>'\u2718'</h5>)}
+            <div className="guest-text guest-rsvp" >
+                {props.guest.status === 2 && (<span className="text-success">Coming</span>)}
+                {props.guest.status === 1 && ('Maybe')}
+                {props.guest.status === 0 && ('No RSVP')}
+                {props.guest.status === -1 && ('\u2718')}
+            </div>
 
         </li>
     );
@@ -122,7 +131,13 @@ function GuestAdd(props) {
     return (
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
         <form className="mb-2" onSubmit={SubmitGuest} >
-            <input name="email" type="email" onChange={handleChange} value={email} placeholder="Guest email" />
+            <input 
+                name="email" 
+                type="email" 
+                onChange={handleChange} 
+                value={email} 
+                placeholder="Guest email"
+                className="guest-email-input" />
             <span className="p-2">press [enter] to add guest.</span>
         </form>
     );

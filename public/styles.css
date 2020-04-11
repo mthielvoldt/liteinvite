@@ -16,6 +16,10 @@
     line-height: 225px;
   }
 
+  h5 {
+    margin-bottom: .2rem;
+  }
+
   p {
     font-size: 1.3rem;
   }
@@ -30,16 +34,47 @@
     z-index:-1;
   }
 
-  .event-item {
+  .event-detail {
     background-color: rgba(0,0,0,0.3); /* Black background with opacity */;
-    font-weight: 700;
-    border-color: black;
+    border: 1px solid black;
     color: white;
+    padding: .5rem;
+  }
+
+  .event-detail-input {
+    border-radius: .25rem;
+    margin-bottom: .9rem;
+    width: 100%;
+  }
+
+
+  .guest-text {
+    position: relative;
+    margin: auto 0;
+  }
+
+  .guest-delete-button {
+    height: 24px;
+  }
+
+  .guest-email {
+    width: 70%;
+    padding: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .guest-rsvp {
+    position: relative;
+  }
+
+  .guest-email-input {
+    display: block;
   }
 
   .input-group .custom-file {
-    flex: 0 1 auto;
-    width: 40%;
+    max-width: 18rem;
+    overflow: hidden;
   }
 
 
@@ -64,17 +99,8 @@
   .auth-input {
     border: 1px solid rgba(136, 136, 136, 0.6);
     background-color: rgba(136, 136, 136, 0.2);
-  }
-  
-  form {
-    padding: 20px 0;
-    position: relative;
-  }
-  
-  input {
     width: 100%;
     border-radius: 3px;
-    font-family: "Source Sans Pro", sans-serif;
     padding: 10px 15px;
     margin: 0 auto 10px auto;
     display: block;

@@ -23,10 +23,14 @@ function App() {
     const [details, setDetails] = useState({ name: "", desc: "" });
     const [saved, setSaved] = useState(false);
 
-    xhr_load.onload = () => { setDetails(JSON.parse(xhr_load.response)); };
-    xhr_save.onload = () => { 
-        if (xhr_save.status === 200) setSaved(true); };
-    
+    xhr_load.onload = () => {
+        setDetails(JSON.parse(xhr_load.response));
+        adjustTextareaHeight();
+    };
+    xhr_save.onload = () => {
+        if (xhr_save.status === 200) setSaved(true);
+    };
+
 
     useEffect(() => {
         xhr_load.open("get", detailsRoute);
@@ -60,7 +64,7 @@ function App() {
                     content={details.name}
                     change={handleChange}
                 />
-                <Detail
+                <Description
                     name="desc"
                     label="Description"
                     content={details.desc}
@@ -76,7 +80,6 @@ function App() {
 }
 
 function Detail(props) {
-
     return (
         <div>
             <h5>{props.label}</h5>
@@ -85,8 +88,22 @@ function Detail(props) {
                 type="text"
                 onChange={props.change}
                 value={props.content}
-                className="event-item list-group-item" />
-            {/* <p contentEditable="true" onChange={changeDetail} >{props.content}</p> */}
+                className="event-detail event-detail-input" />
+        </div>
+    );
+}
+
+function Description(props) {
+    return (
+        <div>
+            <h5>{props.label}</h5>
+            <textarea
+                id="description"
+                name={props.name}
+                value={props.content}
+                onChange={props.change}
+                rows="7"
+                className="event-detail event-detail-input" />
         </div>
     );
 }
@@ -97,7 +114,12 @@ function ImageSelect() {
         <form id="upload-form" action="/events/<%=meetup._id%>/image" method="post" encType="multipart/form-data">
             <div className="input-group mb-3">
                 <div className="custom-file">
-                    <input type="file" name="meetupImage" id="meetupImageInput" className="event-item custom-file-input" accept="image/*" />
+                    <input
+                        type="file"
+                        name="meetupImage"
+                        id="meetupImageInput"
+                        className="event-item custom-file-input"
+                        accept="image/*" />
                     <label htmlFor="meetupImageInput" className="custom-file-label">Upload an Image</label>
                 </div>
                 <div className="input-group-append">
@@ -114,4 +136,11 @@ document.querySelector('.custom-file-input').addEventListener('change', function
     nextSibling.innerText = fileName;
     var uploadBtn = document.getElementById("imageUploadBtn");
     uploadBtn.removeAttribute("disabled");
-  });
+});
+
+// the event description can get to be bigger than the default textarea size. 
+// Here, we size up the rectangle if necessary, so we can see it all. 
+function adjustTextareaHeight() {
+    let description = document.getElementById("description");
+    description.style.height = description.scrollHeight + 2 + "px";
+}
