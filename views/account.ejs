@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h1 class="mb-4">Manage your account</h1>
+  <%- message %> 
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="mb-3">Change your password</h3>
+
+          <!-- Makes POST request to /register route -->
+          <form action="/password" method="POST">
+            <div class="form-group">
+              <label for="name">Current Password</label>
+              <input type="password" class="form-control" name="oldPass" autofocus>
+            </div>
+            <div class="form-group">
+              <label for="email">New Password</label>
+              <input id="new-pass-1" type="password" class="form-control" name="newPass">
+            </div>
+            <div class="form-group">
+              <label for="password">Confirm New Password</label>
+              <input id="new-pass-2" type="password" class="form-control" name="newPass2">
+            </div>
+            <button id="submit-btn" type="submit" class="btn btn-dark">Change</button>
+          </form>
+
+          <p id="pass-short">Password too short.</p>
+          <p id="pass-mismatch" hidden>Passwords don't match</p>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var pass1 = document.getElementById("new-pass-1");
+  var pass2 = document.getElementById("new-pass-2");
+  var submit = document.getElementById("submit-btn");
+  var short = document.getElementById("pass-short");
+  var match = document.getElementById("pass-mismatch");
+
+  pass1.onkeyup = () => {
+    if (pass1.value.length < 7) {
+      submit.setAttribute("disabled", true);
+      short.removeAttribute("hidden");
+      match.setAttribute("hidden", true);
+    } else {
+      short.setAttribute("hidden", true);
+      match.removeAttribute("hidden");
+    }
+  }
+
+  pass2.onkeyup = function () {
+    if (pass1.value !== pass2.value) {
+      submit.setAttribute("disabled", true);
+      match.removeAttribute("hidden");
+      return;
+    }
+    if (pass2.value.length > 6) {
+      submit.removeAttribute("disabled");
+      short.setAttribute("hidden", true);
+      match.setAttribute("hidden", true);
+    }
+  }
+</script>
+
+<%- include('partials/scripts') %>
+
+<%- include('partials/footer') %>

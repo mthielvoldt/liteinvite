@@ -87,7 +87,7 @@ app.get('/', (req, res) => {
             if (err) {
                 console.log(err);
             }
-            res.render("home", { user: user, meetups: foundMeetups });
+            res.render("home", { user: user, meetups: foundMeetups, authenticated: true });
         });
     }
     else {
@@ -97,7 +97,7 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
     logReq(req);
-    res.render("login");
+    res.render("login", { authenticated: false});
 });
 
 app.get('/logout', (req, res) => {
@@ -108,7 +108,17 @@ app.get('/logout', (req, res) => {
 
 app.get('/register', (req, res) => {
     logReq(req);
-    res.render("register");
+    res.render("register", { authenticated: false });
+});
+
+app.get('/account', (req, res) => {
+    logReq(req);
+
+    if (!req.isAuthenticated()) {
+        res.status(401).render('/login', { authenticated: false} );
+        return;
+    }
+    res.render('account', { message: "", authenticated: true });
 });
 
 // The main edit page, for users that own the event only. 
@@ -116,7 +126,7 @@ app.get('/events/:meetId/edit', (req, res) => {
     logReq(req);
 
     authFindMeetup(req, res, (foundMeetup) => {
-        res.render("edit", { meetup: foundMeetup });
+        res.render("edit", { meetup: foundMeetup, authenticated: true });
     });
 });
 
@@ -137,13 +147,15 @@ app.get('/events/:meetId', (req, res) => {
     logReq(req);
 
     findMeetup(req, res, (foundMeetup) => {
+
+        // Read the guestId from the query string in url, then look up the guest's email
         let guestId = req.query.guest;
         let guestEmail = "";
         if (guestId != null) {
-            let guest = foundMeetup.guests.find((guest) => (guest._id.toString() == guestId));
+            let guest = foundMeetup.guests.find((guest) => (guest._id.toString() === guestId));
             guestEmail = guest.email;
         }
-        res.render("event", { meetup: foundMeetup, guestEmail: guestEmail });
+        res.render("event", { meetup: foundMeetup, guestEmail: guestEmail, authenticated: req.isAuthenticated() });
     });
 });
 
@@ -222,7 +234,7 @@ app.get('/events/:meetId/invites', (req, res) => {
     logReq(req);
 
     authFindMeetup(req, res, (meetup) => {
-        res.render('links', { meetId: meetup._id, guests: meetup.guests });
+        res.render('links', { meetId: meetup._id, guests: meetup.guests, authenticated: true });
     });
 });
 
@@ -383,6 +395,25 @@ app.post('/register', (req, res) => {
     });
 });
 
+app.post('/password', (req, res) => {
+    logReq(req);
+    console.log(req.body);
+    const wrongOldPass = '<div class="alert alert-warning" role="alert">Current password Incorrect</div>';
+    const success = '<div class="alert alert-success" role="alert">Password changed</div>';
+  
+
+    if (!req.isAuthenticated()) {
+        res.status(401).render('/login', {authenticated: false});
+        return;
+    }
+
+    // check that the original password is correct.  
+    // (user already authenticated, but make sure it's not just an old session.)
+    req.user.changePassword(req.body.oldPass, req.body.newPass)
+    .then( () => res.render('account', {message: success, authenticated: true}))
+    .catch( () => res.status(403).render('account', { message: wrongOldPass , authenticated: true}) );
+});
+
 app.post('/login', passport.authenticate('local', {
     failureRedirect: '/login', successRedirect: '/'
 }));
@@ -428,7 +459,7 @@ function authFindMeetup(req, res, cb) {
 
     if (!req.isAuthenticated()) {
         console.log("NO-AUTH  user not authenticated.");
-        res.status(401).render('login');
+        res.status(401).render('login', { authenticated: false });
         return null;
     } else {
         findMeetup(req, res, (foundMeetup) => {

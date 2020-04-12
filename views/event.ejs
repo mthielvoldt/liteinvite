@@ -1,9 +1,8 @@
-<%- include('partials/header') %>
+<%- include('partials/header', { authenticated: authenticated }) %>
 
 <style>
   body {
     background-image: url("/images/<%= meetup._id %>");
-    background-size: cover;
     color: white;
   }
 </style>
@@ -12,7 +11,7 @@
 <div class="overlay"></div>
 <div class="container p-3 pt-md-5">
   <div class="py-3 text-center">
-    <h1 class=""><%= meetup.name %></h1>
+    <h1 class="text-shadow"><%= meetup.name %></h1>
   </div>
 
   <div class="row">

@@ -1,12 +1,12 @@
   
-  html, body {
-    min-height: 100%;
-  }
+html {
+  min-height: 100%;
+}
 
   body {
     font-family: "Source Sans Pro", sans-serif;
     font-weight: 500;
-    /* background-color: #bcc2c2; */
+    background-size: cover;
     width: 100%;
     position: relative;
   }
@@ -16,15 +16,23 @@
     line-height: 225px;
   }
 
-  h1, .text-shadow {
+  .text-shadow {
     text-shadow: 2px 2px 4px black;
   }
+
   h5 {
     margin-bottom: .2rem;
   }
 
   p {
     font-size: 1.3rem;
+  }
+
+  .no-shrink {
+    flex-shrink: 0;
+  }
+  .growable {
+    flex-grow: 1;
   }
 
   .overlay {
@@ -34,11 +42,22 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.3); /* Black background with opacity */
+    box-shadow: inset 0 0 6rem rgba(0, 0, 0, .5);
     z-index:-1;
   }
 
   .desc-view {
     white-space: pre-line;
+  }
+
+  #menu {
+    margin-left: auto;
+    padding-right: 15px;
+  }
+
+  #about-text {
+    flex-shrink: 1;
+    min-width: 20rem;
   }
 
   .event-detail {

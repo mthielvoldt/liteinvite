@@ -10,7 +10,7 @@
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
   <link rel="stylesheet" href="/styles.css">
-  
+
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
   <!-- <link rel="manifest" href="/site.webmanifest"> -->
@@ -35,16 +35,21 @@
   <header>
     <div class="collapse bg-dark" id="navbarHeader">
       <div class="container">
-        <div class="row">
-          <div class="col-sm-8 col-md-7 py-4">
-            <h4 class="text-white">About</h4>
-            <p class="text-muted">LiteInvite is a minimalist but flexible way to organize events. </p>
+        <div class="row justify-content-between">
+          <div id="about-text" class="col-sm-12 col-md-7 pt-3">
+            <p class="text-white">LiteInvite is a minimalist but flexible way to organize events. </p>
           </div>
-          <div class="col-sm-4 offset-md-1 py-4">
-            <h4 class="text-white">Contact</h4>
-            <ul class="list-unstyled">
-              <li><a href="#" class="text-white">Email</a></li>
-            </ul>
+          <div id="menu" class="d-flex flex-column no-shrink justify-content-end pt-3 pb-3">
+            <div class="btn-group" role="group" aria-label="navigation bar">
+              <% if (authenticated) { %>
+              <a href="/account" class="btn btn-secondary">Account</a>
+              <a href="/logout" class="btn btn-secondary">Sign out</a>
+              <% } else { %>
+              <a href="/login" class="btn btn-secondary">Login</a>
+              <a href="/register" class="btn btn-secondary">Sign up</a>
+              <% } %>
+              <a href="/contact" class="btn btn-secondary">Contact</a>
+            </div>
           </div>
         </div>
       </div>
