@@ -121,6 +121,12 @@ app.get('/account', (req, res) => {
     res.render('account', { message: "", authenticated: true });
 });
 
+app.get('/contact', (req, res) => {
+    logReq(req);
+
+    res.render('contact', { message: "", authenticated: req.isAuthenticated() });
+});
+
 // The main edit page, for users that own the event only. 
 app.get('/events/:meetId/edit', (req, res) => {
     logReq(req);
