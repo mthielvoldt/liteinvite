@@ -22,15 +22,17 @@ function App() {
     const xhrDelete = new XMLHttpRequest();
     xhrDelete.onload = () => { console.log(xhrDelete.responseText); };
 
-    // run only once at page-load to populate the guest-list
-    useEffect(() => {
+    // calls updateList() once at page-load to populate the guest-list
+    useEffect(updateList, []);
+
+    function updateList() {
         fetch(guestListRoute)
             .then(res => res.json())
             .then((fetchedGuests) => {
                 setGuests(fetchedGuests);
             })
             .catch(error => console.log(error));
-    }, []);
+    }
 
     function addGuest(newGuestEmail) {
 
@@ -60,7 +62,7 @@ function App() {
                 ))}
             </ul>
             <GuestAdd addGuest={addGuest} />
-            <SendButton />
+            <SendButton updateList={updateList} />
         </div>
     );
 }
@@ -105,15 +107,15 @@ function GuestLine(props) {
     );
 }
 
-function postSuccess() {
-    console.log(this.responseText);
-}
-var xhrPost = new XMLHttpRequest();
-xhrPost.onload = postSuccess;
-
-
 function GuestAdd(props) {
     const [email, setEmail] = useState("");
+
+    let xhrPost = new XMLHttpRequest();
+    xhrPost.onload = postSuccess;
+
+    function postSuccess() {
+        console.log(this.responseText);
+    }
 
     function SubmitGuest(event) {
 
@@ -148,21 +150,29 @@ function GuestAdd(props) {
 }
 
 function SendButton(props) {
+    const [viewState, setViewState] = useState({ status: 0, message: "" });
 
     let xhrInvite = new XMLHttpRequest();
-    xhrInvite.onload = () => console.log(xhrInvite.responseText);
+    xhrInvite.onload = () => {
+        console.log(xhrInvite.responseText);
+        setViewState({ status: xhrInvite.status, message: xhrInvite.responseText });
+        props.updateList();
+    }
 
     function sendInvites() {
-        xhrPost.open("GET", invitesRoute); 
-        xhrPost.send();
+        xhrInvite.open("GET", invitesRoute);
+        xhrInvite.send();
         event.preventDefault();
     }
     return (
-        <div>
-            <button onClick={sendInvites} className="btn btn-secondary">Send invitations</button>
-            <div>
+        <div className="row">
+            <div className="col-6">
+                <button onClick={sendInvites} className="btn btn-primary">Send invitations</button>
                 <small>to new guests only</small>
             </div>
+            {(viewState.status === 200) && (<div className="alert alert-success col-6" role="alert">{viewState.message}</div>)}
+            {(viewState.status === 204) && (<div className="alert alert-info  col-6" role="alert">No new invites</div>)}
+            {(viewState.status >= 400) && (<div className="alert alert-warning col-6" role="alert">Error sending</div>)}
         </div>
     );
 }

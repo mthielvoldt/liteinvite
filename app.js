@@ -294,7 +294,11 @@ app.get('/events/:meetId/invites', (req, res) => {
         // update the "sent" values to reflect emails sent. 
         meetup.save();  
 
-        res.send(numSent + " Emails sent");
+        if (numSent == 0) {
+            res.status(204).send(numSent + " Emails sent");
+        } else {
+            res.send(numSent + " Emails sent");
+        }
     });
 });
 
