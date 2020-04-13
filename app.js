@@ -253,12 +253,19 @@ app.get('/events/:meetId/invites', (req, res) => {
 
                 let subjectString = "Invitation to " +req.user.name+ "'s event";
 
-                let textString = "Dear " +guest.name+ ",\n" 
-                    +req.user.name+ " cordially invites you to: " +meetup.name+ 
+                let textSalutation = "Hello, \n";
+                let htmlSalutation = "<p>Hello,</p>"
+                if (guest.name.length > 0) {
+                    textSalutation = "Dear " +guest.name+ ",\n";
+                    htmlSalutation = "<h3>Dear " +guest.name+ ",</h3><p>";
+                } 
+
+                let textString = textSalutation+ 
+                    req.user.name+ " cordially invites you to: " +meetup.name+ 
                     "\nTo see details and RSVP, visit: " +eventUrl;
 
-                let htmlString = "<h3>Dear " +guest.name+ ",</h3><p>" 
-                    +req.user.name+ " cordially invites you to: " +meetup.name+ 
+                let htmlString =  htmlSalutation+
+                    req.user.name+ " cordially invites you to: " +meetup.name+ 
                     "</p><p>To see details and RSVP: <a href='" +eventUrl+ "'>View Invitation</a>";
 
                 let idString = "from: " +req.user.username+ " to: " +guest.email+ " re: " +meetup.name;
@@ -587,7 +594,7 @@ const testTransportOpts = {
     secure: false,
     auth: {
         user: 'xi6jql37mss4srk2@ethereal.email',
-        pass: 'xhgmFb3HMfRM3mpw1Q'
+        pass: process.env.ETHERIAL_PASS
     }
 }
 const liveTransporter = nodemailer.createTransport(liveTransportOpts)
