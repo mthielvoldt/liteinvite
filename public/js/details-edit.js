@@ -5,7 +5,6 @@ const useEffect = React.useEffect;
 const meetId = $("#meetup-id").text();
 const detailsRoute = "/events/" + meetId + "/details";
 const imageRoute = "/events/" + meetId + "/image";
-console.log("From details-edit: meetId=" + meetId);
 
 const xhr_load = new XMLHttpRequest();
 const xhr_save = new XMLHttpRequest();

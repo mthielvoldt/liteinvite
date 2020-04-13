@@ -16,10 +16,6 @@ html {
     line-height: 225px;
   }
 
-  .text-shadow {
-    text-shadow: 2px 2px 4px black;
-  }
-
   h5 {
     margin-bottom: .2rem;
   }
@@ -33,6 +29,10 @@ html {
   }
   .growable {
     flex-grow: 1;
+  }
+
+  .text-shadow {
+    text-shadow: 2px 2px 4px black;
   }
 
   .overlay {
@@ -91,8 +91,8 @@ html {
     white-space: nowrap;
   }
   .guest-status {
+    flex: 0 0 58px;
     text-align: center;
-    min-width: 58px;
   }
 
   .guest-email-input {

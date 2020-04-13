@@ -60,7 +60,7 @@ function App() {
                 ))}
             </ul>
             <GuestAdd addGuest={addGuest} />
-            <SendInvites />
+            <SendButton />
         </div>
     );
 }
@@ -105,11 +105,11 @@ function GuestLine(props) {
     );
 }
 
-function ajaxSuccess() {
+function postSuccess() {
     console.log(this.responseText);
 }
-var oReq = new XMLHttpRequest();
-oReq.onload = ajaxSuccess;
+var xhrPost = new XMLHttpRequest();
+xhrPost.onload = postSuccess;
 
 
 function GuestAdd(props) {
@@ -120,9 +120,9 @@ function GuestAdd(props) {
         // Here, we pass this email string to the parent component.
         props.addGuest(email);
 
-        oReq.open("POST", guestPostRoute); //oFormElement.action
-        oReq.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
-        oReq.send(email);
+        xhrPost.open("POST", guestPostRoute);
+        xhrPost.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
+        xhrPost.send(email);
         setEmail("");       // clear the input box. 
         event.preventDefault();
     }
@@ -147,10 +147,19 @@ function GuestAdd(props) {
     );
 }
 
-function SendInvites(props) {
+function SendButton(props) {
+
+    let xhrInvite = new XMLHttpRequest();
+    xhrInvite.onload = () => console.log(xhrInvite.responseText);
+
+    function sendInvites() {
+        xhrPost.open("GET", invitesRoute); 
+        xhrPost.send();
+        event.preventDefault();
+    }
     return (
         <div>
-            <a href={invitesRoute} className="btn btn-secondary">Send invitations</a>
+            <button onClick={sendInvites} className="btn btn-secondary">Send invitations</button>
             <div>
                 <small>to new guests only</small>
             </div>

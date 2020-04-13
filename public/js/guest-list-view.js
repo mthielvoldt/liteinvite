@@ -123,13 +123,13 @@ function GuestAdd(props) {
         <form className="card p-2 mb-2">
             <div className="input-group">
                 <small className="text-muted">For event notifications only</small>
-                <input type="email" className="" name="email" onChange={handleChange} value={guest.email} placeholder="Your email (optional)" />
+                <input type="email" className="w-100 mb-2" name="email" onChange={handleChange} value={guest.email} placeholder="Your email" />
                 <small className="text-muted">This is what other guests will see</small>
-                <input type="text" className="" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
+                <input type="text" className="w-100 mb-2" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
                 <input type="hidden" name="status" value={guest.status} />
-                <button type="button" className="btn btn-primary mb-2" onClick={() => submitGuest(2)}>I'm in!</button>
-                <button type="button" className="btn btn-outline-primary mb-2" onClick={() => submitGuest(1)}>Maybe</button>
-                <button type="button" className="btn btn-secondary mb-2" onClick={() => submitGuest(-1)}>Can't</button>
+                <button type="button" className="btn btn-primary btn-block" onClick={() => submitGuest(2)}>I'm in!</button>
+                <button type="button" className="btn btn-outline-primary btn-block" onClick={() => submitGuest(1)}>Maybe</button>
+                <button type="button" className="btn btn-secondary btn-block" onClick={() => submitGuest(-1)}>Can't</button>
             </div>
         </form>
     )
