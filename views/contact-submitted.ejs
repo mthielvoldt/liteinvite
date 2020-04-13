@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2 class="mb-4">Contact form submitted</h2>
+  <span>Redirecting to </span>
+  <a href="/" class="btn btn-primary">Home</a>
+
+  <script>
+    setTimeout(function () {
+      window.location.href = "https://liteinvite.com"; //will redirect to your blog page (an ex: blog.html)
+    }, 3000); //will call the function after 2 secs.
+  </script>
+
+  <%- include('partials/scripts') %>
+
+  <%- include('partials/footer') %>
