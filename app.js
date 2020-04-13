@@ -159,7 +159,7 @@ app.get('/events/:meetId', (req, res) => {
         let guestEmail = "";
         if (guestId != null) {
             let guest = foundMeetup.guests.find((guest) => (guest._id.toString() === guestId));
-            guestEmail = guest.email;
+            if (guest !== undefined) guestEmail = guest.email;   // crash here after changing status.
         }
         res.render("event", { meetup: foundMeetup, guestEmail: guestEmail, authenticated: req.isAuthenticated() });
     });
@@ -334,26 +334,24 @@ app.post('/events/:meetId/guests', function (req, res) {
 // Guest submitting their RSVP and nickname. 
 app.put('/events/:meetId/guests', (req, res) => {
     logReq(req);
-
-    console.log(req.body);
+    console.log("\trequest body: ", req.body);
 
     // find the meetup
     findMeetup(req, res, (foundMeetup) => {
 
-        let sentGuest = filterFields(req.body); // automatically parsed
+        // validate every field we consume. 
+        let sentGuest = filterFields(req.body);
         if (sentGuest == null) return;
-        console.log(sentGuest);
-
-        // validate the email with regex. 
-
-        sentGuest = Object.assign({ sent: 1 }, sentGuest); // include "sent" field if it isn't there. 
+        
+        // include "sent" field if it isn't there. 
+        sentGuest = Object.assign({ sent: 1 }, sentGuest); 
 
         // does the meetup's guest list conain this email?
         let index = foundMeetup.guests.findIndex((guest) => (guestsEqual(guest, sentGuest)));
 
         if (index > -1) {
-            // yes: overwrite that element. 
-            foundMeetup.guests[index] = sentGuest;
+            // yes: overwrite the fields of that element.  But do not overwrite the _id. 
+            Object.assign(foundMeetup.guests[index], sentGuest);
             res.status(200).send("guest data updated.");
         } else {
             // no: push this new record.  
