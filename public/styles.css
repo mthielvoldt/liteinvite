@@ -83,7 +83,7 @@ html {
   }
 
   .guest-email {
-    min-width: 60%;
+
     flex-grow: 1;
     padding: 6px;
     overflow: hidden;
@@ -92,7 +92,7 @@ html {
   }
   .guest-status {
     text-align: center;
-    width: 70px;
+    min-width: 58px;
   }
 
   .guest-email-input {

@@ -95,10 +95,10 @@ function GuestLine(props) {
             </div>
 
             <div className="guest-text guest-status" >
-                {props.guest.status === 2 && (<span className="text-success">Coming</span>)}
+                {props.guest.status === 2 && (<span className="text-success">Yes</span>)}
                 {props.guest.status === 1 && (<span className="text-warning">Maybe</span>)}
                 {props.guest.status === 0 && (<span className="text-muted">No RSVP</span>)}
-                {props.guest.status === -1 && (<span className="text-danger">Nope</span>)}
+                {props.guest.status === -1 && (<span className="text-danger">No</span>)}
             </div>
 
         </li>

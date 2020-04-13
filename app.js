@@ -5,7 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const fs = require('fs');
+//const fs = require('fs');
 
 // user auth packages (3)
 const session = require("express-session");

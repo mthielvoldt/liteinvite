@@ -83,7 +83,7 @@ function App() {
 function Detail(props) {
     return (
         <div>
-            <h5>{props.label}</h5>
+            <h5 className="text-shadow">{props.label}</h5>
             <input
                 name={props.name}
                 type="text"
@@ -97,7 +97,7 @@ function Detail(props) {
 function Description(props) {
     return (
         <div>
-            <h5>{props.label}</h5>
+            <h5 className="text-shadow">{props.label}</h5>
             <textarea
                 id="description"
                 name={props.name}
