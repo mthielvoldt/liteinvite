@@ -29,7 +29,7 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
-    function addGuest(newGuest) {
+    function putGuest(newGuest) {
         console.log(newGuest);
 
         // Check to see if this email has been entered before (case-insensitive match)
@@ -46,7 +46,7 @@ function App() {
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            <RSVP addGuest={addGuest} />
+            <RSVP putGuest={putGuest} />
         </div>
     );
 }
@@ -76,42 +76,67 @@ function GuestLine(props) {
                 <strong >{props.guest.name}</strong>
             </div>
             <div className="guest-text guest-status text-success">
-                    {props.guest.status === 2 && <h4>{'\u2714'}</h4>}
-                    {props.guest.status === 1 && (<h4 className="text-warning">?</h4>)}
+                {props.guest.status === 2 && <h4>{'\u2714'}</h4>}
+                {props.guest.status === 1 && (<h4 className="text-warning">?</h4>)}
             </div>
         </li>
     );
 }
 
 function RSVP(props) {
-    const [coming, setComing] = useState(false);
+    const [viewState, setViewState] = useState({ windowVisible: false, message: "" });
+
+    function putSuccess() {
+        console.log(this.responseText);
+        setViewState({ windowVisible: false, message:this.responseText });
+    }
+    var xhrGuest = new XMLHttpRequest();
+    xhrGuest.onload = putSuccess;
+
+    function putGuest(guest) {
+
+        // Send the PUT request. 
+        xhrGuest.open("PUT", guestListRoute);
+        xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
+        xhrGuest.send(JSON.stringify(guest));
+
+        // close the RSVP window.
+        //setWindowVisible(false);
+
+        // Only update front-end if this guest is coming. 
+        if (guest.status > -1 && guest.name !== "") {
+            props.putGuest(guest);  // pass data up.
+        }
+    }
+    function setWindowVisible(visible) {
+        setViewState({ ...viewState, windowVisible: visible });
+    }
 
     return (
-        coming ?
-            (<div><GuestAdd addGuest={props.addGuest} />
-                <button className="btn btn-secondary" onClick={() => { setComing(false) }} > Cancel </button>
-            </div>) :
-            (<button className="btn btn-primary" onClick={() => { setComing(true); }}> RSVP </button>)
+        viewState.windowVisible ?
+            (
+                <div><GuestAdd putGuest={putGuest} />
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setWindowVisible(false)}> Cancel </button>
+                </div>
+            ) : (
+                <div>
+                    <button className="btn btn-primary mb-3" onClick={() => setWindowVisible(true)}> RSVP </button>
+                    {viewState.message && (<div className="alert alert-info" role="alert">{viewState.message}</div>)}
+                </div>
+            )
     );
 }
 
-function ajaxSuccess() {
-    console.log(this.responseText);
-}
-var xhrGuest = new XMLHttpRequest();
-xhrGuest.onload = ajaxSuccess;
 
 function GuestAdd(props) {
 
     const [guest, setGuest] = useState({ name: "", email: guestEmail, status: 0 });
 
     function submitGuest(newStatus) {
-        //event.preventDefault();       // don't need this because buttons have type="button"
         guest.status = newStatus;
-        xhrGuest.open("PUT", guestListRoute);
-        xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
-        xhrGuest.send(JSON.stringify(guest));
-        props.addGuest(guest);
+        props.putGuest(guest);
     }
 
     function handleChange(event) {
