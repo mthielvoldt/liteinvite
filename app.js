@@ -5,7 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
-//const fs = require('fs');
+const nodemailer = require("nodemailer");
 
 // user auth packages (3)
 const session = require("express-session");
@@ -97,7 +97,7 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
     logReq(req);
-    res.render("login", { authenticated: false});
+    res.render("login", { authenticated: false });
 });
 
 app.get('/logout', (req, res) => {
@@ -115,7 +115,7 @@ app.get('/account', (req, res) => {
     logReq(req);
 
     if (!req.isAuthenticated()) {
-        res.status(401).render('/login', { authenticated: false} );
+        res.status(401).render('/login', { authenticated: false });
         return;
     }
     res.render('account', { message: "", authenticated: true });
@@ -240,7 +240,61 @@ app.get('/events/:meetId/invites', (req, res) => {
     logReq(req);
 
     authFindMeetup(req, res, (meetup) => {
-        res.render('links', { meetId: meetup._id, guests: meetup.guests, authenticated: true });
+        let eventName = meetup.name;
+        let organizerName = req.user.name;
+        let numSent = 0;
+
+        meetup.guests.forEach(guest => {
+            if (guest.sent === 0) {
+                guest.sent = 1;
+                numSent += 1;
+
+                let eventUrl = "https://liteinvite.com/events/" + meetup._id + "?guest=" + guest._id;
+
+                let subjectString = "Invitation to " +req.user.name+ "'s event";
+
+                let textString = "Dear " +guest.name+ ",\n" 
+                    +req.user.name+ " cordially invites you to: " +meetup.name+ 
+                    "\nTo see details and RSVP, visit: " +eventUrl;
+
+                let htmlString = "<h3>Dear " +guest.name+ ",</h3><p>" 
+                    +req.user.name+ " cordially invites you to: " +meetup.name+ 
+                    "</p><p>To see details and RSVP: <a href='" +eventUrl+ "'>View Invitation</a>";
+
+                let idString = "from: " +req.user.username+ " to: " +guest.email+ " re: " +meetup.name;
+
+                let message = {
+                    from: '"invitations" <invitations@liteinvite.com>',
+                    replyTo: req.user.username,
+                    to: guest.email,
+                    subject: subjectString,
+                    text: textString,
+                    html: htmlString,
+                    dsn: {
+                        id: idString,
+                        return: 'headers',
+                        notify: ['success', 'failure', 'delay'],
+                        recipient: 'mthielvoldt@gmail.com'
+                    }
+                }
+
+
+                transporter.sendMail(message, (err, info) => {
+                    if (err) {
+                        console.log('Error occurred. ' + err.message);
+                        return process.exit(1);
+                    }
+
+                    console.log('Message sent: %s', info.messageId);
+                    // Preview only available when sending through an Ethereal account
+                    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+                });
+            }
+        });
+        // update the "sent" values to reflect emails sent. 
+        meetup.save();  
+
+        res.send(numSent + " Emails sent");
     });
 });
 
@@ -406,18 +460,18 @@ app.post('/password', (req, res) => {
     console.log(req.body);
     const wrongOldPass = '<div class="alert alert-warning" role="alert">Current password Incorrect</div>';
     const success = '<div class="alert alert-success" role="alert">Password changed</div>';
-  
+
 
     if (!req.isAuthenticated()) {
-        res.status(401).render('/login', {authenticated: false});
+        res.status(401).render('/login', { authenticated: false });
         return;
     }
 
     // check that the original password is correct.  
     // (user already authenticated, but make sure it's not just an old session.)
     req.user.changePassword(req.body.oldPass, req.body.newPass)
-    .then( () => res.render('account', {message: success, authenticated: true}))
-    .catch( () => res.status(403).render('account', { message: wrongOldPass , authenticated: true}) );
+        .then(() => res.render('account', { message: success, authenticated: true }))
+        .catch(() => res.status(403).render('account', { message: wrongOldPass, authenticated: true }));
 });
 
 app.post('/login', passport.authenticate('local', {
@@ -484,3 +538,35 @@ function validEmail(str) {
     let emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
     return emailRegex.test(str);
 }
+
+/////////////////// Email Functions ///////////////////////////////////
+
+
+
+const transportOpts = {
+    host: "mail.name.com",
+    port: 25,
+    secure: false,
+    auth: {
+        user: "invitations@liteinvite.com",
+        pass: process.env.EMAIL_PASS
+    }
+}
+const testTransportOpts = {
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'xi6jql37mss4srk2@ethereal.email',
+        pass: 'xhgmFb3HMfRM3mpw1Q'
+    }
+}
+
+console.log("transport opts: ", testTransportOpts);
+const transporter = nodemailer.createTransport(testTransportOpts);
+
+
+
+
+
+
