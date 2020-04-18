@@ -1,5 +1,8 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
+    console.log('Dev Environment.');
+} else {
+    console.log('Production Environment.')
 }
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -251,24 +254,24 @@ app.get('/events/:meetId/invites', (req, res) => {
 
                 let eventUrl = "https://liteinvite.com/events/" + meetup._id + "?guest=" + guest._id;
 
-                let subjectString = "Invitation to " +req.user.name+ "'s event";
+                let subjectString = "Invitation to " + req.user.name + "'s event";
 
                 let textSalutation = "Hello, \n";
                 let htmlSalutation = "<p>Hello,</p>"
                 if (guest.name.length > 0) {
-                    textSalutation = "Dear " +guest.name+ ",\n";
-                    htmlSalutation = "<h3>Dear " +guest.name+ ",</h3><p>";
-                } 
+                    textSalutation = "Dear " + guest.name + ",\n";
+                    htmlSalutation = "<h3>Dear " + guest.name + ",</h3><p>";
+                }
 
-                let textString = textSalutation+ 
-                    req.user.name+ " cordially invites you to: " +meetup.name+ 
-                    "\nTo see details and RSVP, visit: " +eventUrl;
+                let textString = textSalutation +
+                    req.user.name + " cordially invites you to: " + meetup.name +
+                    "\nTo see details and RSVP, visit: " + eventUrl;
 
-                let htmlString =  htmlSalutation+
-                    req.user.name+ " cordially invites you to: " +meetup.name+ 
-                    "</p><p>To see details and RSVP: <a href='" +eventUrl+ "'>View Invitation</a>";
+                let htmlString = htmlSalutation +
+                    req.user.name + " cordially invites you to: " + meetup.name +
+                    "</p><p>To see details and RSVP: <a href='" + eventUrl + "'>View Invitation</a>";
 
-                let idString = "from: " +req.user.username+ " to: " +guest.email+ " re: " +meetup.name;
+                let idString = "from: " + req.user.username + " to: " + guest.email + " re: " + meetup.name;
 
                 let message = {
                     from: '"invitations" <invitations@liteinvite.com>',
@@ -298,7 +301,7 @@ app.get('/events/:meetId/invites', (req, res) => {
             }
         });
         // update the "sent" values to reflect emails sent. 
-        meetup.save();  
+        meetup.save();
 
         if (numSent == 0) {
             res.status(204).send(numSent + " Emails sent");
@@ -352,9 +355,9 @@ app.put('/events/:meetId/guests', (req, res) => {
         // validate every field we consume. 
         let sentGuest = filterFields(req.body);
         if (sentGuest == null) return;
-        
+
         // include "sent" field if it isn't there. 
-        sentGuest = Object.assign({ sent: 1 }, sentGuest); 
+        sentGuest = Object.assign({ sent: 1 }, sentGuest);
 
         // does the meetup's guest list conain this email?
         let index = foundMeetup.guests.findIndex((guest) => (guestsEqual(guest, sentGuest)));
@@ -374,13 +377,12 @@ app.put('/events/:meetId/guests', (req, res) => {
 
     // Read only certain fields from input object and validate each one. (object destructuring)
     function filterFields({ email, name, status }) {
-        const rxName = /^[A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+([\ A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+)*/;
 
         if (!validEmail(email)) {
             res.status(400).send("Invalid email: guest not updated");
             return null;
         }
-        if (!rxName.test(name)) {
+        if (!validName(name)) {
             res.status(400).send("Invalid name: guest not updated");
             return null;
         }
@@ -447,6 +449,21 @@ app.post('/register', (req, res) => {
     logReq(req);
 
     //console.log(req.body); // this seems like a security issue. It prints the password.
+
+    // validate the input fields.
+    if (!validName(req.body.name)) {
+        res.status(400).send("Invalid name: user not created");
+        return null;
+    }
+    if (!validEmail(req.body.username)) {
+        res.status(400).send("Invalid email: user not created");
+        return null;
+    }
+    if (!validPassword(req.body.password)) {
+        res.status(400).send("Invalid password: user not created");
+        return null;
+    }
+
     User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
@@ -510,7 +527,7 @@ app.post('/contact', (req, res) => {
             console.log('Message sent: %s', info.messageId);
             // Preview only available when sending through an Ethereal account
             //console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-            res.render('contact-submitted', {authenticated: req.isAuthenticated()});
+            res.render('contact-submitted', { authenticated: req.isAuthenticated() });
         }
     });
 });
@@ -571,8 +588,18 @@ function authFindMeetup(req, res, cb) {
 }
 
 function validEmail(str) {
-    let emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
+    const emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
     return emailRegex.test(str);
+}
+
+function validName(str) {
+    const nameRegex = /^[A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+([\ A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+)*/;
+    return nameRegex.test(str);
+}
+
+function validPassword(str) {
+    const passRegex = /^[!-~]{7,50}$/;
+    return passRegex.test(str);
 }
 
 /////////////////// Email Functions ///////////////////////////////////
