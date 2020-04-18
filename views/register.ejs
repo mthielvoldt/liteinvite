@@ -4,7 +4,7 @@
   <h1>Register</h1>
 
   <div class="row">
-    <div class="col-sm-8">
+    <div class="col-lg-6 col-md-8">
       <div class="card">
         <div class="card-body">
 
@@ -12,24 +12,25 @@
           <form action="/register" method="POST">
             <div class="form-group">
               <label for="name">Name</label>
-              <input type="text" class="form-control" name="name" autofocus>
+              <input type="text" class="form-control" name="name" autofocus required>
             </div>
             <div class="form-group">
               <label for="email">Email</label>
-              <input type="email" class="form-control" name="username">
+              <input type="email" class="form-control" name="username" required>
             </div>
             <div class="form-group">
               <label for="password">Password</label>
               <input id="new-pass-1" type="password" class="form-control" name="password">
+              <div id="pass-short" class="text-danger" hidden>Password too short.</div>
             </div>
             <div class="form-group">
               <label for="password">Confirm Password</label>
               <input id="new-pass-2" type="password" class="form-control" name="password2">
+              <div id="pass-mismatch" class="text-danger" hidden>Passwords don't match</div>
             </div>
-            <button id="submit-btn" type="submit" class="btn btn-dark">Register</button>
+            <button id="submit-btn" type="submit" class="btn btn-dark" disabled>Register</button>
           </form>
-          <p id="pass-short">Password too short.</p>
-          <p id="pass-mismatch" hidden>Passwords don't match</p>
+          
         </div>
       </div>
     </div>
