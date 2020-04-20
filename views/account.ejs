@@ -2,35 +2,95 @@
 
 <div class="container mt-5">
   <h1 class="mb-4">Manage your account</h1>
-  <%- message %> 
+  <% if (typeof alertType !== 'undefined') { %>
+  <div class="alert alert-<%= alertType %>" role="alert"><%- message %></div>
+  <% } %>
 
   <div class="row">
-    <div class="col-sm-6">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="mb-3">Change your password</h3>
+    <div class="col-sm-12 col-md-8 col-lg-6">
 
-          <form action="/password" method="POST">
-            <div class="form-group">
-              <label for="name">Current Password</label>
-              <input type="password" class="form-control" name="oldPass" autofocus>
-            </div>
-            <div class="form-group">
-              <label for="email">New Password</label>
-              <input id="new-pass-1" type="password" class="form-control" name="newPass">
-            </div>
-            <div class="form-group">
-              <label for="password">Confirm New Password</label>
-              <input id="new-pass-2" type="password" class="form-control" name="newPass2">
-            </div>
-            <button id="submit-btn" type="submit" class="btn btn-dark">Change</button>
-          </form>
+      <details id="change-pass-dialog">
+        <summary class="btn btn-primary mb-3" role="button">Change password</summary>
 
-          <p id="pass-short">Password too short.</p>
-          <p id="pass-mismatch" hidden>Passwords don't match</p>
+        <div class="card w-100" style="position:absolute; top:0;">
+          <div class="card-header">
+            <button class="btn float-right" type="reset"
+              onclick="document.getElementById('change-pass-dialog').removeAttribute('open');"
+              aria-label="Close dialog">
+              <svg class="bi bi-x-square" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M14 1H2a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z"
+                  clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                  d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+            <h4 class="mt-1">Change your password</h4>
+          </div>
+          <div class="card-body">
+            <form action="/password" method="POST">
+              <div class="form-group">
+                <label for="oldPass">Current Password</label>
+                <input id="oldPass" type="password" class="form-control" name="oldPass">
+              </div>
+              <div class="form-group">
+                <label for="new-pass-1">New Password</label>
+                <input id="new-pass-1" type="password" class="form-control" name="newPass">
+                <div id="pass-short" class="text-danger" hidden>Password too short.</div>
+              </div>
+              <div class="form-group">
+                <label for="new-pass-2">Confirm New Password</label>
+                <input id="new-pass-2" type="password" class="form-control" name="newPass2">
+                <div id="pass-mismatch" class="text-danger" hidden>Passwords don't match</div>
+              </div>
+              <button id="submit-btn" type="submit" class="btn btn-dark">Change password</button>
+            </form>
 
+          </div>
         </div>
-      </div>
+      </details>
+
+      <details id="change-name-dialog">
+        <summary class="btn btn-primary mb-3" role="button">Change name</summary>
+
+        <div class="card w-100" style="position:absolute; top:0;">
+          <div class="card-header">
+            <button class="btn float-right" type="reset"
+              onclick="document.getElementById('change-name-dialog').removeAttribute('open');"
+              aria-label="Close dialog">
+              <svg class="bi bi-x-square" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M14 1H2a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1zM2 0a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2H2z"
+                  clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                  d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+            <h4 class="mt-1">Change your name</h4>
+          </div>
+          <div class="card-body">
+            <form action="/name" method="POST">
+              <div class="form-group">
+                <label for="ch-name-password">Password</label>
+                <input id="ch-name-password" type="password" class="form-control" name="pass">
+              </div>
+              <div class="form-group">
+                <label for="new-name">New name</label>
+                <input id="new-name" type="text" class="form-control" name="newName">
+                <div id="invalid-name" class="text-danger" hidden>Invalid name</div>
+              </div>
+              <button id="change-name-submit" type="submit" class="btn btn-dark">Change name</button>
+            </form>
+
+          </div>
+        </div>
+      </details>
     </div>
 
   </div>

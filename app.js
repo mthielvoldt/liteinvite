@@ -118,7 +118,7 @@ app.get('/account', (req, res) => {
     logReq(req);
 
     if (!req.isAuthenticated()) {
-        res.status(401).render('/login', { authenticated: false });
+        res.status(401).render('login', { authenticated: false });
         return;
     }
     res.render('account', { message: "", authenticated: true });
@@ -483,8 +483,8 @@ app.post('/register', (req, res) => {
 app.post('/password', (req, res) => {
     logReq(req);
     console.log(req.body);
-    const wrongOldPass = '<div class="alert alert-warning" role="alert">Current password Incorrect</div>';
-    const success = '<div class="alert alert-success" role="alert">Password changed</div>';
+    const wrongOldPass = '<strong>Current password incorrect.</strong>  Your password has not been changed.';
+    const success = 'Password changed';
 
 
     if (!req.isAuthenticated()) {
@@ -493,10 +493,40 @@ app.post('/password', (req, res) => {
     }
 
     // check that the original password is correct.  
-    // (user already authenticated, but make sure it's not just an old session.)
+    // (user already authenticated, but make sure it's not just an old session or a CSRF attack.)
     req.user.changePassword(req.body.oldPass, req.body.newPass)
-        .then(() => res.render('account', { message: success, authenticated: true }))
-        .catch(() => res.status(403).render('account', { message: wrongOldPass, authenticated: true }));
+        .then(() => res.render('account', { alertType: "success", message: success, authenticated: true }))
+        .catch(() => res.status(403).render('account', { alertType: "danger", message: wrongOldPass, authenticated: true }));
+});
+
+app.post('/name', (req, res) => {
+    logReq(req);
+    console.log("req.body: ", req.body);
+    const wrongOldPass = '<strong>Current password incorrect.</strong>  Your name has not been changed.';
+    const invalidName = '<strong>Invalid name.</strong>  Your name has not been changed.';
+    const success = '<strong>Success.</strong>  Your name has been changed.';
+
+    if (!req.isAuthenticated()) {
+        res.status(401).render('/login', { authenticated: false });
+        return;
+    }
+    if (!validName(req.body.name)) {
+        res.status(403).render('account', { alertType: "danger", message: invalidName, authenticated: true });
+        return;
+    }
+
+    req.user.authenticate(req.body.pass)
+        .then(({ user }) => {
+            if (!user) {
+                console.log("Name change failure: incorrect password");
+                res.status(403).render('account', { alertType: "danger", message: wrongOldPass, authenticated: true });
+            } else {
+                console.log("Name change success.");
+                user.name = req.body.newName;
+                user.save();
+                res.render('account', { alertType: "success", message: success, authenticated: true })
+            }
+        });
 });
 
 app.post('/login', passport.authenticate('local', {
