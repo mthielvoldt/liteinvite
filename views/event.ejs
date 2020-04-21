@@ -3,7 +3,6 @@
 <style>
   body {
     background-image: url("/images/<%= meetup._id %>");
-    color: white;
   }
 </style>
 
@@ -11,12 +10,12 @@
 <div class="overlay"></div>
 <div class="container p-3 pt-md-5">
   <div class="py-3 text-center">
-    <h1 class="text-shadow"><%= meetup.name %></h1>
+    <h1 class="event-h"><%= meetup.name %></h1>
   </div>
 
   <div class="row">
     <div class="col-md-8 order-md-1">
-      <h2 class="text-shadow mb-3">Details</h2>
+      <h2 class="event-h mb-3">Details</h2>
       <div class="event-detail event-detail-single desc-view mb-3"><%= meetup.desc %></div>
     </div>
 
@@ -34,6 +33,7 @@
 
 <!-- store the meetup Id in a dom element so scripts can access it -->
 <data id="guest-email" hidden><%= guestEmail %></data>
+<data id="guest-name" hidden><%= guestName %></data>
 <data id="meetup-id" hidden><%= meetup._id %></data>
 
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>

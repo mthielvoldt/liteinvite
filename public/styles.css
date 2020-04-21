@@ -31,10 +31,6 @@ html {
     flex-grow: 1;
   }
 
-  .text-shadow {
-    text-shadow: 2px 2px 4px black;
-  }
-
   .overlay {
     position: fixed;
     top: 0;
@@ -60,6 +56,11 @@ html {
     min-width: 20rem;
   }
 
+  .event-h {
+    text-shadow: 2px 2px 4px black;
+    color: white;
+  }
+  
   .event-detail {
     background-color: rgba(0,0,0,0.4); /* Black background with opacity */;
     border: 1px solid black;

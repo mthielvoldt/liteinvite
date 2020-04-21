@@ -160,11 +160,15 @@ app.get('/events/:meetId', (req, res) => {
         // Read the guestId from the query string in url, then look up the guest's email
         let guestId = req.query.guest;
         let guestEmail = "";
+        let guestName = "";
         if (guestId != null) {
             let guest = foundMeetup.guests.find((guest) => (guest._id.toString() === guestId));
-            if (guest !== undefined) guestEmail = guest.email;   // crash here after changing status.
+            if (guest !== undefined) {
+                guestEmail = guest.email; 
+                guestName = guest.name;
+            }
         }
-        res.render("event", { meetup: foundMeetup, guestEmail: guestEmail, authenticated: req.isAuthenticated() });
+        res.render("event", { meetup: foundMeetup, guestEmail: guestEmail, guestName: guestName, authenticated: req.isAuthenticated() });
     });
 });
 
@@ -182,10 +186,8 @@ app.get('/events/:meetId/guests', (req, res) => {
     logReq(req);
 
     findMeetup(req, res, (foundMeetup) => {
-        // only respond with the guests that are going, and only provide their nicknames. 
-        let guestListPartial = foundMeetup.guests.filter((guest) => guest.status > 0);
-        guestListPartial = guestListPartial.map((guest) => ({ name: guest.name, status: guest.status }));
 
+        let guestListPartial = getPartialGuestList(foundMeetup)
         console.log("guests for this meet: " + JSON.stringify(guestListPartial));
         res.json(guestListPartial);
     });
@@ -288,7 +290,7 @@ app.get('/events/:meetId/invites', (req, res) => {
                     }
                 }
 
-                liveTransporter.sendMail(message, (err, info) => {
+                transporter.sendMail(message, (err, info) => {
                     if (err) {
                         console.log('Error occurred. ' + err.message);
                         return process.exit(1);
@@ -348,6 +350,7 @@ app.post('/events/:meetId/guests', function (req, res) {
 app.put('/events/:meetId/guests', (req, res) => {
     logReq(req);
     console.log("\trequest body: ", req.body);
+    let responseObj = { message: "", guestList: []}; 
 
     // find the meetup
     findMeetup(req, res, (foundMeetup) => {
@@ -365,13 +368,17 @@ app.put('/events/:meetId/guests', (req, res) => {
         if (index > -1) {
             // yes: overwrite the fields of that element.  But do not overwrite the _id. 
             Object.assign(foundMeetup.guests[index], sentGuest);
-            res.status(200).send("guest data updated.");
+            responseObj.message = "guest data updated.";
+            res.status(200);
         } else {
             // no: push this new record.  
             foundMeetup.guests.push(sentGuest);
-            res.status(201).send("new guest created.");
+            responseObj.message = "new guest created.";
+            res.status(201);
         }
         console.log("updated guest list: ", foundMeetup.guests);
+        responseObj.guestList = getPartialGuestList(foundMeetup);
+        res.json(responseObj);
         foundMeetup.save();
     });
 
@@ -549,7 +556,7 @@ app.post('/contact', (req, res) => {
             recipient: 'mthielvoldt@gmail.com'
         }
     };
-    liveTransporter.sendMail(message, (err, info) => {
+    transporter.sendMail(message, (err, info) => {
         if (err) {
             console.log('Email Error occurred. ' + err.message);
             return;// process.exit(1);
@@ -632,6 +639,12 @@ function validPassword(str) {
     return passRegex.test(str);
 }
 
+function getPartialGuestList(meetup) {
+    // only respond with the guests that are going, and only provide their nicknames. 
+    let guestListPartial = meetup.guests.filter((guest) => guest.status > 0);
+    return guestListPartial.map((guest) => ({ name: guest.name, status: guest.status }));
+}
+
 /////////////////// Email Functions ///////////////////////////////////
 
 
@@ -655,10 +668,5 @@ const testTransportOpts = {
     }
 }
 const liveTransporter = nodemailer.createTransport(liveTransportOpts)
-const testTransporter = nodemailer.createTransport(testTransportOpts);
-
-
-
-
-
+const transporter = nodemailer.createTransport(testTransportOpts);
 

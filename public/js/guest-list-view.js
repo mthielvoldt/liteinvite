@@ -4,6 +4,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const guestEmail = document.getElementById("guest-email").innerText;
+const guestName = document.getElementById("guest-name").innerText;
 const meetId = document.getElementById("meetup-id").innerText;
 const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
@@ -29,24 +30,15 @@ function App() {
             .catch(error => console.log(error));
     }, []);
 
-    function putGuest(newGuest) {
-        console.log(newGuest);
-
-        // Check to see if this email has been entered before (case-insensitive match)
-        const hasMatch = guests.some((guest) => guest.name.toUpperCase() === newGuest.name.toUpperCase());
-
-        if (hasMatch) {
-            console.log("email matches one previously entered.");
-        } else {
-            setGuests([...guests, newGuest]);
-        }
+    function updateGuestList(newGuestList) {
+        setGuests(newGuestList);
     }
 
     return (
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            <RSVP putGuest={putGuest} />
+            <RSVP updateGuestList={updateGuestList} />
         </div>
     );
 }
@@ -54,7 +46,7 @@ function App() {
 function GuestHeader(props) {
     return (
         <h2 className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-shadow">Who's Coming:</span>
+            <span className="event-h">Who's Coming:</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
         </h2>
     );
@@ -86,12 +78,16 @@ function GuestLine(props) {
 function RSVP(props) {
     const [viewState, setViewState] = useState({ windowVisible: false, message: "" });
 
-    function putSuccess() {
-        console.log(this.responseText);
-        setViewState({ windowVisible: false, message:this.responseText });
-    }
     var xhrGuest = new XMLHttpRequest();
-    xhrGuest.onload = putSuccess;
+    xhrGuest.onload = () => {
+        let response = JSON.parse(xhrGuest.response);
+        console.log(response);
+        setViewState({ windowVisible: false, message:response.message });
+
+        if( typeof response.guestList !== 'undefined') {
+            props.updateGuestList(response.guestList);  // pass data up.
+        }
+    };
 
     function putGuest(guest) {
 
@@ -102,11 +98,6 @@ function RSVP(props) {
 
         // close the RSVP window.
         //setWindowVisible(false);
-
-        // Only update front-end if this guest is coming. 
-        if (guest.status > -1 && guest.name !== "") {
-            props.putGuest(guest);  // pass data up.
-        }
     }
     function setWindowVisible(visible) {
         setViewState({ ...viewState, windowVisible: visible });
@@ -132,7 +123,7 @@ function RSVP(props) {
 
 function GuestAdd(props) {
 
-    const [guest, setGuest] = useState({ name: "", email: guestEmail, status: 0 });
+    const [guest, setGuest] = useState({ name: guestName, email: guestEmail, status: 0 });
 
     function submitGuest(newStatus) {
         guest.status = newStatus;
@@ -147,10 +138,10 @@ function GuestAdd(props) {
     return (
         <form className="card p-2 mb-2">
             <div className="input-group">
-                <small className="text-muted">For event notifications only</small>
-                <input type="email" className="w-100 mb-2" name="email" onChange={handleChange} value={guest.email} placeholder="Your email" />
+                <small>This RSVP is for</small>
+                <p>{guest.email}</p>
                 <small className="text-muted">This is what other guests will see</small>
-                <input type="text" className="w-100 mb-2" name="name" onChange={handleChange} value={guest.name} placeholder="Enter a nickname" />
+                <input type="text" className="w-100 mb-2" name="name" onChange={handleChange} value={guest.name} placeholder="Your nickname for this event" />
                 <input type="hidden" name="status" value={guest.status} />
                 <button type="button" className="btn btn-primary btn-block" onClick={() => submitGuest(2)}>I'm in!</button>
                 <button type="button" className="btn btn-outline-primary btn-block" onClick={() => submitGuest(1)}>Maybe</button>
