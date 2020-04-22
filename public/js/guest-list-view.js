@@ -38,7 +38,7 @@ function App() {
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            <RSVP updateGuestList={updateGuestList} />
+            {(guestEmail !== "") && <RSVP updateGuestList={updateGuestList} />}
         </div>
     );
 }
@@ -140,7 +140,7 @@ function GuestAdd(props) {
             <div className="input-group">
                 <small>This RSVP is for</small>
                 <p>{guest.email}</p>
-                <small className="text-muted">This is what other guests will see</small>
+                <small className="text-muted">What name would you like other guests to see?</small>
                 <input type="text" className="w-100 mb-2" name="name" onChange={handleChange} value={guest.name} placeholder="Your nickname for this event" />
                 <input type="hidden" name="status" value={guest.status} />
                 <button type="button" className="btn btn-primary btn-block" onClick={() => submitGuest(2)}>I'm in!</button>
