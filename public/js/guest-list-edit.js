@@ -70,7 +70,7 @@ function App() {
 function GuestHeader(props) {
     return (
         <h3 className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-shadow">Guest List</span>
+            <span className="event-h">Guest List</span>
             <span className="badge badge-secondary badge-pill">{props.numGuests}</span>
         </h3>
     );
@@ -79,7 +79,7 @@ function GuestHeader(props) {
 function GuestLine(props) {
 
     return (
-        <li className="event-detail list-group-item d-flex lh-condensed" >
+        <li className="event-view-box list-group-item d-flex lh-condensed" >
 
             <input
                 type="image"
@@ -142,9 +142,9 @@ function GuestAdd(props) {
                 type="email"
                 onChange={handleChange}
                 value={email}
-                placeholder="Guest email"
-                className="guest-email-input" />
-            <span className="p-2">press [enter] to add guest.</span>
+                placeholder="Enter guest email"
+                className="guest-email-input event-edit-box event-edit-box-single" />
+            <span className="event-h p-2">press [enter] to add guest.</span>
         </form>
     );
 }
@@ -167,8 +167,8 @@ function SendButton(props) {
     return (
         <div className="row">
             <div className="col-6">
-                <button onClick={sendInvites} className="btn btn-primary">Send invitations</button>
-                <small>to new guests only</small>
+                <button onClick={sendInvites} className="btn btn-primary mt-3">Send invitations</button>
+                <span className="event-h">to new guests only</span>
             </div>
             {(viewState.status === 200) && (<div className="alert alert-success col-6" role="alert">{viewState.message}</div>)}
             {(viewState.status === 204) && (<div className="alert alert-info  col-6" role="alert">No new invites</div>)}

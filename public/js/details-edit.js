@@ -60,7 +60,7 @@ function App() {
             <form className="App">
                 <Detail
                     name="name"
-                    label="Event Name"
+                    label="Name"
                     content={details.name}
                     change={handleChange}
                 />
@@ -82,13 +82,14 @@ function App() {
 function Detail(props) {
     return (
         <div>
-            <h5 className="text-shadow">{props.label}</h5>
+            <h5 className="event-h">{props.label}</h5>
             <input
                 name={props.name}
                 type="text"
                 onChange={props.change}
                 value={props.content}
-                className="event-detail event-detail-single" />
+                className="event-edit-box event-edit-box-single"
+                placeholder="Enter your event's name here." />
         </div>
     );
 }
@@ -96,14 +97,15 @@ function Detail(props) {
 function Description(props) {
     return (
         <div>
-            <h5 className="text-shadow">{props.label}</h5>
+            <h5 className="event-h">{props.label}</h5>
             <textarea
                 id="description"
                 name={props.name}
                 value={props.content}
                 onChange={props.change}
                 rows="7"
-                className="event-detail event-detail-single" />
+                className="event-edit-box event-edit-box-single"
+                placeholder="Enter details like what, where and when." />
         </div>
     );
 }

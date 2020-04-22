@@ -63,7 +63,7 @@ function GuestList(props) {
 
 function GuestLine(props) {
     return (
-        <li className="event-detail list-group-item d-flex lh-condensed">
+        <li className="event-view-box list-group-item d-flex lh-condensed">
             <div className="guest-text guest-email">
                 <strong >{props.guest.name}</strong>
             </div>

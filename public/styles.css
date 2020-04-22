@@ -57,23 +57,34 @@ html {
   }
 
   .event-h {
-    text-shadow: 2px 2px 4px black;
+    text-shadow: 2px 2px 2px black;
     color: white;
+    margin-top: 1rem;
   }
-  
-  .event-detail {
-    background-color: rgba(0,0,0,0.4); /* Black background with opacity */;
+
+  .event-edit-box {
+    background-color: rgba(0, 0, 0, 0.4); /* Black background with opacity */;
     border: 1px solid black;
     color: white;
     padding: .5rem;
   }
 
-  .event-detail-single {
+  .event-edit-box:focus, .event-edit-box:hover {
+    background-color: rgba(0, 10, 27, 0.55);
+  }
+
+  .event-edit-box-single {
     border-radius: .25rem;
-    margin-bottom: .9rem;
     width: 100%;
   }
 
+  .event-view-box {
+    background-color: rgba(0, 0, 0, .3);
+    border: none;
+    padding: .5rem;
+    color: white;
+    text-shadow: 0px 0px 1px black, 0px 0px 2px black, 0px 0px 3px black;
+  }
 
   .guest-text {
     margin: auto 0;
