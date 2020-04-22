@@ -20,10 +20,6 @@ html {
     margin-bottom: .2rem;
   }
 
-  p {
-    font-size: 1.3rem;
-  }
-
   .no-shrink {
     flex-shrink: 0;
   }
@@ -62,15 +58,20 @@ html {
     margin-top: 1rem;
   }
 
+  .event-p {
+    text-shadow: 2px 2px 2px black;
+    color: white;
+  }
+
   .event-edit-box {
-    background-color: rgba(0, 0, 0, 0.4); /* Black background with opacity */;
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */;
     border: 1px solid black;
     color: white;
     padding: .5rem;
   }
 
   .event-edit-box:focus, .event-edit-box:hover {
-    background-color: rgba(0, 10, 27, 0.55);
+    background-color: rgba(0, 10, 27, 0.6);
   }
 
   .event-edit-box-single {
@@ -79,7 +80,7 @@ html {
   }
 
   .event-view-box {
-    background-color: rgba(0, 0, 0, .3);
+    background-color: rgba(0, 0, 0, .4);
     border: none;
     padding: .5rem;
     color: white;

@@ -144,7 +144,7 @@ function GuestAdd(props) {
                 value={email}
                 placeholder="Enter guest email"
                 className="guest-email-input event-edit-box event-edit-box-single" />
-            <span className="event-h p-2">press [enter] to add guest.</span>
+            <span className="event-p">press [enter] to add guest.</span>
         </form>
     );
 }
@@ -166,9 +166,9 @@ function SendButton(props) {
     }
     return (
         <div className="row">
-            <div className="col-6">
+            <div className="col-8">
                 <button onClick={sendInvites} className="btn btn-primary mt-3">Send invitations</button>
-                <span className="event-h">to new guests only</span>
+                <p className="event-p">to new guests only</p>
             </div>
             {(viewState.status === 200) && (<div className="alert alert-success col-6" role="alert">{viewState.message}</div>)}
             {(viewState.status === 204) && (<div className="alert alert-info  col-6" role="alert">No new invites</div>)}
