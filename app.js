@@ -667,6 +667,6 @@ const testTransportOpts = {
         pass: process.env.ETHERIAL_PASS
     }
 }
-const liveTransporter = nodemailer.createTransport(liveTransportOpts)
-const transporter = nodemailer.createTransport(testTransportOpts);
-
+const liveTransporter = nodemailer.createTransport(liveTransportOpts);
+const testTransporter = nodemailer.createTransport(testTransportOpts);
+const transporter = liveTransporter;
