@@ -564,7 +564,7 @@ app.post('/contact', (req, res) => {
             console.log('Message sent: %s', info.messageId);
             // Preview only available when sending through an Ethereal account
             //console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-            res.render('contact-submitted', { authenticated: req.isAuthenticated() });
+            res.set('Access-Control-Allow-Origin', '*').render('contact-submitted', { authenticated: req.isAuthenticated() });
         }
     });
 });
