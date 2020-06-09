@@ -12,6 +12,7 @@ const session = require("express-session");
 
 const db = require('./db');
 const passport = require('./passport');
+const utils = require('./utils');
 
 
 const app = express();
@@ -43,7 +44,7 @@ app.listen(port, () => {
 });
 
 app.get('/', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     if (req.isAuthenticated()) {
         let user = req.user;
 
@@ -60,23 +61,23 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     res.render("login", { authenticated: false });
 });
 
 app.get('/logout', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     req.logout();
     res.redirect('/');
 });
 
 app.get('/register', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     res.render("register", { authenticated: false });
 });
 
 app.get('/account', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
     if (!req.isAuthenticated()) {
         res.status(401).render('login', { authenticated: false });
@@ -86,25 +87,25 @@ app.get('/account', (req, res) => {
 });
 
 app.get('/contact', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
     res.render('contact', { message: "", authenticated: req.isAuthenticated() });
 });
 
 // The main edit page, for users that own the event only. 
 app.get('/events/:meetId/edit', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (foundMeetup) => {
+    utils.authFindMeetup(req, res, (foundMeetup) => {
         res.render("edit", { meetup: foundMeetup, authenticated: true });
     });
 });
 
 // Get the event details 
 app.get('/events/:meetId/details', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    findMeetup(req, res, (foundMeetup) => {
+    utils.findMeetup(req, res, (foundMeetup) => {
         const { name, desc } = foundMeetup;
         //const details = Object.assign({}, foundMeetup, {});
         res.setHeader('Content-Type', 'application/json');
@@ -114,9 +115,9 @@ app.get('/events/:meetId/details', (req, res) => {
 
 // page for viewing event.  Does not require auth.  Optionally includes guest-id parameter. 
 app.get('/events/:meetId', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    findMeetup(req, res, (foundMeetup) => {
+    utils.findMeetup(req, res, (foundMeetup) => {
 
         // Read the guestId from the query string in url, then look up the guest's email
         let guestId = req.query.guest;
@@ -135,20 +136,20 @@ app.get('/events/:meetId', (req, res) => {
 
 // Gets the event's full guest-list, containing names, email and RSVP status.  Only accessible by event owner
 app.get('/events/:meetId/guests-full', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (foundMeetup) => {
+    utils.authFindMeetup(req, res, (foundMeetup) => {
         res.json(foundMeetup.guests);
     });
 });
 
 // partial guest-list.  No auth required for this, just a valid event-id. 
 app.get('/events/:meetId/guests', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    findMeetup(req, res, (foundMeetup) => {
+    utils.findMeetup(req, res, (foundMeetup) => {
 
-        let guestListPartial = getPartialGuestList(foundMeetup)
+        let guestListPartial = utils.getPartialGuestList(foundMeetup)
         console.log("guests for this meet: " + JSON.stringify(guestListPartial));
         res.json(guestListPartial);
     });
@@ -156,7 +157,7 @@ app.get('/events/:meetId/guests', (req, res) => {
 
 // creates a new eventf
 app.get('/create', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     if (!req.isAuthenticated()) {
         res.redirect('/login');
         return;
@@ -175,9 +176,9 @@ app.get('/create', (req, res) => {
 });
 
 app.get('/events/:meetId/delete', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (foundMeetup) => {
+    utils.authFindMeetup(req, res, (foundMeetup) => {
 
         let meetId = req.params.meetId;
         let user = req.user;
@@ -203,9 +204,9 @@ app.get('/events/:meetId/delete', (req, res) => {
 });
 
 app.get('/events/:meetId/invites', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (meetup) => {
+    utils.authFindMeetup(req, res, (meetup) => {
         let eventName = meetup.name;
         let organizerName = req.user.name;
         let numSent = 0;
@@ -279,13 +280,13 @@ app.get('/events/:meetId/invites', (req, res) => {
 // organizer creates new guest associated with specified event.  
 // Submitted as plain text containing only the email 
 app.post('/events/:meetId/guests', function (req, res) {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (meetup) => {
+    utils.authFindMeetup(req, res, (meetup) => {
         let meetId = req.params.meetId;
         let newEmail = req.body.toString();     // comes in as text/plain.
 
-        if (!validEmail(newEmail)) {
+        if (!utils.validEmail(newEmail)) {
             console.log("Invalid guest email address.")
             res.status(400).send("Invalid email address");
             return;
@@ -295,7 +296,7 @@ app.post('/events/:meetId/guests', function (req, res) {
         console.log("meetup.guests", meetup.guests, "newGuest:", newGuest);
 
         // if this guest is already present, don't add to the array. 
-        if (meetup.guests.some((guest) => guestsEqual(guest, newGuest))) {
+        if (meetup.guests.some((guest) => utils.guestsEqual(guest, newGuest))) {
             console.log("guest already associated with this meetup.")
             res.status(200).send("Guest already associated with this meetup.  User not created.");
         } else {
@@ -309,12 +310,12 @@ app.post('/events/:meetId/guests', function (req, res) {
 
 // Guest submitting their RSVP and nickname. 
 app.put('/events/:meetId/guests', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     console.log("\trequest body: ", req.body);
     let responseObj = { message: "", guestList: []}; 
 
     // find the meetup
-    findMeetup(req, res, (foundMeetup) => {
+    utils.findMeetup(req, res, (foundMeetup) => {
 
         // validate every field we consume. 
         let sentGuest = filterFields(req.body);
@@ -324,7 +325,7 @@ app.put('/events/:meetId/guests', (req, res) => {
         sentGuest = Object.assign({ sent: 1 }, sentGuest);
 
         // does the meetup's guest list conain this email?
-        let index = foundMeetup.guests.findIndex((guest) => (guestsEqual(guest, sentGuest)));
+        let index = foundMeetup.guests.findIndex((guest) => (utils.guestsEqual(guest, sentGuest)));
 
         if (index > -1) {
             // yes: overwrite the fields of that element.  But do not overwrite the _id. 
@@ -338,7 +339,7 @@ app.put('/events/:meetId/guests', (req, res) => {
             res.status(201);
         }
         console.log("updated guest list: ", foundMeetup.guests);
-        responseObj.guestList = getPartialGuestList(foundMeetup);
+        responseObj.guestList = utils.getPartialGuestList(foundMeetup);
         res.json(responseObj);
         foundMeetup.save();
     });
@@ -346,11 +347,11 @@ app.put('/events/:meetId/guests', (req, res) => {
     // Read only certain fields from input object and validate each one. (object destructuring)
     function filterFields({ email, name, status }) {
 
-        if (!validEmail(email)) {
+        if (!utils.validEmail(email)) {
             res.status(400).send("Invalid email: guest not updated");
             return null;
         }
-        if (!validName(name)) {
+        if (!utils.validName(name)) {
             res.status(400).send("Invalid name: guest not updated");
             return null;
         }
@@ -363,14 +364,14 @@ app.put('/events/:meetId/guests', (req, res) => {
 });
 
 app.delete('/events/:meetId/guests/:email', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, (foundMeetup) => {
+    utils.authFindMeetup(req, res, (foundMeetup) => {
 
         let guestToDelete = { email: req.params.email };
 
         // remove the guest with the indicated email.
-        let newGuests = foundMeetup.guests.filter((guest) => !guestsEqual(guest, guestToDelete));
+        let newGuests = foundMeetup.guests.filter((guest) => !utils.guestsEqual(guest, guestToDelete));
 
         if ((foundMeetup.guests.length - newGuests.length) !== 1) {
             res.status(404).send("That guest was not found.  Nothing deleted.");
@@ -385,9 +386,9 @@ app.delete('/events/:meetId/guests/:email', (req, res) => {
 
 // edit event details
 app.put('/events/:meetId/details', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
-    authFindMeetup(req, res, function (foundMeetup) {
+    utils.authFindMeetup(req, res, function (foundMeetup) {
         Object.assign(foundMeetup, req.body);
         foundMeetup.save();
         res.status(200).send("changes saved to event " + foundMeetup._id);
@@ -404,7 +405,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage, limits: { fileSize: 10000000, fieldNameSize: 1000 } });
 
 app.post('/events/:meetId/image', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     upload.single('meetupImage')(req, res, function (err) {
         if (err) {
             console.log(err.message);
@@ -414,20 +415,20 @@ app.post('/events/:meetId/image', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
     //console.log(req.body); // this seems like a security issue. It prints the password.
 
     // validate the input fields.
-    if (!validName(req.body.name)) {
+    if (!utils.validName(req.body.name)) {
         res.status(400).send("Invalid name: user not created");
         return null;
     }
-    if (!validEmail(req.body.username)) {
+    if (!utils.validEmail(req.body.username)) {
         res.status(400).send("Invalid email: user not created");
         return null;
     }
-    if (!validPassword(req.body.password)) {
+    if (!utils.validPassword(req.body.password)) {
         res.status(400).send("Invalid password: user not created");
         return null;
     }
@@ -449,7 +450,7 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/password', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     console.log(req.body);
     const wrongOldPass = '<strong>Current password incorrect.</strong>  Your password has not been changed.';
     const success = 'Password changed';
@@ -468,7 +469,7 @@ app.post('/password', (req, res) => {
 });
 
 app.post('/name', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
     console.log("req.body: ", req.body);
     const wrongOldPass = '<strong>Current password incorrect.</strong>  Your name has not been changed.';
     const invalidName = '<strong>Invalid name.</strong>  Your name has not been changed.';
@@ -478,7 +479,7 @@ app.post('/name', (req, res) => {
         res.status(401).render('/login', { authenticated: false });
         return;
     }
-    if (!validName(req.body.name)) {
+    if (!utils.validName(req.body.name)) {
         res.status(403).render('account', { alertType: "danger", message: invalidName, authenticated: true });
         return;
     }
@@ -502,7 +503,7 @@ app.post('/login', passport.authenticate('local', {
 }));
 
 app.post('/contact', (req, res) => {
-    logReq(req);
+    utils.logReq(req);
 
     let message = {
         from: 'invitations@liteinvite.com',
@@ -530,81 +531,6 @@ app.post('/contact', (req, res) => {
     });
 });
 
-///////////////////// Helper Functions ///////////////////////////////////
-
-function logReq(req) {
-    if (req.user == null) {
-        console.log(req.method, req.url, ": no user");
-    } else {
-        console.log(req.method, req.url, ":", req.user.name, ":", req.user._id);
-    }
-}
-
-function guestsEqual(guestA, guestB) {
-    return (
-        //guestA.name === guestB.name ||
-        guestA.email === guestB.email
-    );
-}
-
-function findMeetup(req, res, cb) {
-    db.Meetup.findById(req.params.meetId, function (err, foundMeetup) {
-        if (err) {
-            console.log("ERROR  Error searching for meetup by Id.  meetID:" + req.params.meetId);
-            console.log("message:  " + err.message);
-            console.log("reason:  " + err.reason);
-            res.status(500).send("<h3>It's not you, it's us.</h3><p>We encountered an error while searching for that event.</p>");
-            return null;
-        }
-        if (foundMeetup == null) {
-            console.log("NOT-FOUND  Meetup not found: " + req.params.meetId);
-            res.status(404).send("sorry, we can't find that event.");
-            return null;
-        }
-        cb(foundMeetup);
-    });
-}
-
-// checks user is authenticated, finds event, checks that user owns event. 
-function authFindMeetup(req, res, cb) {
-
-    if (!req.isAuthenticated()) {
-        console.log("NO-AUTH  user not authenticated.");
-        res.status(401).render('login', { authenticated: false });
-        return null;
-    } else {
-        findMeetup(req, res, (foundMeetup) => {
-            if (foundMeetup.owner.toString() !== req.user._id.toString()) {
-                console.log("*FORBIDDEN*  User does not own the meetup user:" + req.user._id + " meetId:" + req.params.meetId);
-                res.status(403).send('<h3>Forbidden</h3><p>Did you maybe sign in as a different user in another tab?</p><a href="/">Home</a>');
-                return null;
-            } else {
-                cb(foundMeetup);
-            }
-        });
-    }
-}
-
-function validEmail(str) {
-    const emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
-    return emailRegex.test(str);
-}
-
-function validName(str) {
-    const nameRegex = /^[A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+([\ A-Za-z][A-Za-z\u00C0-\u00FF\'\-]+)*/;
-    return nameRegex.test(str);
-}
-
-function validPassword(str) {
-    const passRegex = /^[!-~]{7,50}$/;
-    return passRegex.test(str);
-}
-
-function getPartialGuestList(meetup) {
-    // only respond with the guests that are going, and only provide their nicknames. 
-    let guestListPartial = meetup.guests.filter((guest) => guest.status > 0);
-    return guestListPartial.map((guest) => ({ name: guest.name, status: guest.status }));
-}
 
 /////////////////// Email Functions ///////////////////////////////////
 
