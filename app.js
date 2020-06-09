@@ -6,14 +6,12 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
-
-// user auth packages (3)
 const session = require("express-session");
-const passport = require("passport");
-const passportLocalMongoose = require("passport-local-mongoose");
+
+const db = require('./db');
+const passport = require('./passport');
 
 
 const app = express();
@@ -36,43 +34,6 @@ app.use(passport.initialize());
 app.use(passport.session());    // use passport to handle the sessions
 
 
-// Creates a new db if it is not already there.  Requires mongod to be running.
-mongoose.connect('mongodb://localhost:27017/LiteInvite',
-    { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.set("useCreateIndex", true);
-
-const Schema = mongoose.Schema;
-const ObjectId = Schema.ObjectId;
-
-// this is a constructor.  Needs new keyword?
-const userSchema = new Schema({
-    name: String,
-    username: String,
-    password: String,
-    meetups: [ObjectId],
-    guests: [ObjectId],
-});
-
-const meetupSchema = new Schema({
-    name: String,
-    owner: { type: ObjectId, required: true },
-    desc: String,
-    image: String,
-    location: String,
-    time: String,
-    lists: [],
-    guests: [{ name: String, email: String, sent: Number, status: Number }],
-});
-
-userSchema.plugin(passportLocalMongoose);   // use passport local mongoose to handle hashing and salting passwords
-
-const Meetup = mongoose.model("meetup", meetupSchema);
-const User = mongoose.model("User", userSchema);    // need "new"
-
-passport.use(User.createStrategy());                // connect passport to the User collection (mongoose model)
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
 const port = process.env.PORT || 3000;
 
@@ -86,7 +47,7 @@ app.get('/', (req, res) => {
     if (req.isAuthenticated()) {
         let user = req.user;
 
-        Meetup.find({ _id: { $in: user.meetups } }, (err, foundMeetups) => {
+        db.Meetup.find({ _id: { $in: user.meetups } }, (err, foundMeetups) => {
             if (err) {
                 console.log(err);
             }
@@ -193,7 +154,7 @@ app.get('/events/:meetId/guests', (req, res) => {
     });
 });
 
-// creates a new event
+// creates a new eventf
 app.get('/create', (req, res) => {
     logReq(req);
     if (!req.isAuthenticated()) {
@@ -201,7 +162,7 @@ app.get('/create', (req, res) => {
         return;
     }
     let user = req.user;
-    let newMeetup = new Meetup({ owner: user._id, name: "", image: defaultImage });
+    let newMeetup = new db.Meetup({ owner: user._id, name: "", image: defaultImage });
     user.meetups.push(newMeetup._id);
     newMeetup.save();
 
@@ -232,7 +193,7 @@ app.get('/events/:meetId/delete', (req, res) => {
             user.meetups = newMeetups;
             user.save();
 
-            Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
+            db.Meetup.findByIdAndDelete(meetId, (err, foundMeetup) => {
                 res.redirect('/');
             });
         }
@@ -471,12 +432,12 @@ app.post('/register', (req, res) => {
         return null;
     }
 
-    User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
+    db.User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
             res.send(err.message);
         } else {
-            User.find({ username: req.body.username }, (query_error, foundUser) => {
+            db.User.find({ username: req.body.username }, (query_error, foundUser) => {
                 console.log(foundUser);
             });
             passport.authenticate("local")(req, res, function () {
@@ -587,7 +548,7 @@ function guestsEqual(guestA, guestB) {
 }
 
 function findMeetup(req, res, cb) {
-    Meetup.findById(req.params.meetId, function (err, foundMeetup) {
+    db.Meetup.findById(req.params.meetId, function (err, foundMeetup) {
         if (err) {
             console.log("ERROR  Error searching for meetup by Id.  meetID:" + req.params.meetId);
             console.log("message:  " + err.message);
