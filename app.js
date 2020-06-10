@@ -7,12 +7,12 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require("express");
 const bodyParser = require("body-parser");
 const multer = require("multer");
-const nodemailer = require("nodemailer");
 const session = require("express-session");
 
 const db = require('./db');
 const passport = require('./passport');
 const utils = require('./utils');
+const mailer = require('./mailer');
 
 
 const app = express();
@@ -126,7 +126,7 @@ app.get('/events/:meetId', (req, res) => {
         if (guestId != null) {
             let guest = foundMeetup.guests.find((guest) => (guest._id.toString() === guestId));
             if (guest !== undefined) {
-                guestEmail = guest.email; 
+                guestEmail = guest.email;
                 guestName = guest.name;
             }
         }
@@ -215,53 +215,7 @@ app.get('/events/:meetId/invites', (req, res) => {
             if (guest.sent === 0) {
                 guest.sent = 1;
                 numSent += 1;
-
-                let eventUrl = "https://liteinvite.com/events/" + meetup._id + "?guest=" + guest._id;
-
-                let subjectString = "Invitation to " + req.user.name + "'s event";
-
-                let textSalutation = "Hello, \n";
-                let htmlSalutation = "<p>Hello,</p>"
-                if (guest.name.length > 0) {
-                    textSalutation = "Dear " + guest.name + ",\n";
-                    htmlSalutation = "<h3>Dear " + guest.name + ",</h3><p>";
-                }
-
-                let textString = textSalutation +
-                    req.user.name + " cordially invites you to: " + meetup.name +
-                    "\nTo see details and RSVP, visit: " + eventUrl;
-
-                let htmlString = htmlSalutation +
-                    req.user.name + " cordially invites you to: " + meetup.name +
-                    "</p><p>To see details and RSVP: <a href='" + eventUrl + "'>View Invitation</a>";
-
-                let idString = "from: " + req.user.username + " to: " + guest.email + " re: " + meetup.name;
-
-                let message = {
-                    from: '"invitations" <invitations@liteinvite.com>',
-                    replyTo: req.user.username,
-                    to: guest.email,
-                    subject: subjectString,
-                    text: textString,
-                    html: htmlString,
-                    dsn: {
-                        id: idString,
-                        return: 'headers',
-                        notify: ['success', 'failure', 'delay'],
-                        recipient: 'mthielvoldt@gmail.com'
-                    }
-                }
-
-                transporter.sendMail(message, (err, info) => {
-                    if (err) {
-                        console.log('Error occurred. ' + err.message);
-                        return process.exit(1);
-                    }
-
-                    console.log('Message sent: %s', info.messageId);
-                    // Preview only available when sending through an Ethereal account
-                    //console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-                });
+                mailer.sendInvitation(meetup, guest, req.user.name)
             }
         });
         // update the "sent" values to reflect emails sent. 
@@ -312,7 +266,7 @@ app.post('/events/:meetId/guests', function (req, res) {
 app.put('/events/:meetId/guests', (req, res) => {
     utils.logReq(req);
     console.log("\trequest body: ", req.body);
-    let responseObj = { message: "", guestList: []}; 
+    let responseObj = { message: "", guestList: [] };
 
     // find the meetup
     utils.findMeetup(req, res, (foundMeetup) => {
@@ -505,55 +459,18 @@ app.post('/login', passport.authenticate('local', {
 app.post('/contact', (req, res) => {
     utils.logReq(req);
 
-    let message = {
-        from: 'invitations@liteinvite.com',
-        replyTo: req.body.from,
-        to: "mthielvoldt@gmail.com",
-        subject: req.body.subject,
-        text: req.body.message,
-        dsn: {
-            id: req.body.subject,
-            return: 'headers',
-            notify: ['success', 'failure', 'delay'],
-            recipient: 'mthielvoldt@gmail.com'
-        }
-    };
-    transporter.sendMail(message, (err, info) => {
-        if (err) {
-            console.log('Email Error occurred. ' + err.message);
-            return;// process.exit(1);
-        } else {
+    mailer.sendContactForm(req.body.from, req.body.subject, req.body.message)
+        .then(info => {
             console.log('Message sent: %s', info.messageId);
+            res.set('Access-Control-Allow-Origin', '*').render('contact-submitted', { authenticated: req.isAuthenticated() });
             // Preview only available when sending through an Ethereal account
             //console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-            res.set('Access-Control-Allow-Origin', '*').render('contact-submitted', { authenticated: req.isAuthenticated() });
-        }
-    });
+        })
+        .catch(err => {
+            console.log('Email Error occurred. ' + err.message);
+            res.status(400).send("Error sending message");
+        })
+    
 });
 
 
-/////////////////// Email Functions ///////////////////////////////////
-
-
-
-const liveTransportOpts = {
-    host: "mail.name.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: "invitations@liteinvite.com",
-        pass: process.env.EMAIL_PASS
-    }
-}
-const testTransportOpts = {
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'xi6jql37mss4srk2@ethereal.email',
-        pass: process.env.ETHERIAL_PASS
-    }
-}
-const liveTransporter = nodemailer.createTransport(liveTransportOpts);
-const testTransporter = nodemailer.createTransport(testTransportOpts);
-const transporter = liveTransporter;
