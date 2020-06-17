@@ -1,9 +1,8 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
-    console.log('Dev Environment.');
-} else {
-    console.log('Production Environment.')
-}
+} 
+console.log("%s environment", process.env.NODE_ENV);
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const multer = require("multer");
@@ -36,12 +35,7 @@ app.use(passport.session());    // use passport to handle the sessions
 
 
 const defaultImage = "pine-trees-under-starry-night-sky-1539225.jpg";
-const port = process.env.PORT || 3000;
 
-
-app.listen(port, () => {
-    console.log("Listening on port " + port);
-});
 
 app.get('/', (req, res) => {
     utils.logReq(req);
@@ -390,7 +384,7 @@ app.post('/register', (req, res) => {
     db.User.register({ username: req.body.username, name: req.body.name }, req.body.password, function (err, user) {
         if (err) {
             console.log(err);
-            res.send(err.message);
+            res.status(409).send(err.message);
         } else {
             db.User.find({ username: req.body.username }, (query_error, foundUser) => {
                 console.log(foundUser);
@@ -470,7 +464,8 @@ app.post('/contact', (req, res) => {
             console.log('Email Error occurred. ' + err.message);
             res.status(400).send("Error sending message");
         })
-    
+
 });
 
 
+exports = module.exports = app;

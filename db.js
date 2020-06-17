@@ -3,15 +3,32 @@ const passportLocalMongoose = require("passport-local-mongoose");
 
 
 // Creates a new db if it is not already there.  Requires mongod to be running.
-mongoose.connect('mongodb://localhost:27017/LiteInvite',
-    { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.set("useCreateIndex", true);
+let dbName = (process.env.NODE_ENV === 'test') ? 'LiteInvite-test' : 'LiteInvite';
+let connected = false;
+
+function connect() {
+  if (connected) {
+    console.log("db already connected.");
+    return Promise.resolve(this);
+  }
+  connected = true; 
+  console.log('connecting to db:', dbName);
+  return (
+    mongoose.connect(`mongodb://localhost:27017/${dbName}`,
+      { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+  );
+}
+
+function disconnect() {
+  connected = false;
+  console.log("disconnecting from database");
+  return mongoose.disconnect();
+}
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 
-// this is a constructor.  Needs new keyword?
 const userSchema = new Schema({
   name: String,
   username: String,
@@ -38,6 +55,8 @@ const meetupSchema = new Schema({
 const Meetup = mongoose.model("meetup", meetupSchema);
 
 module.exports = {
-  User: User,
-  Meetup: Meetup,
+  User,
+  Meetup,
+  connect,
+  disconnect,
 }
