@@ -137,7 +137,6 @@ function GuestAdd(props) {
 
     return (
         <form className="card p-2 mb-2">
-            <div className="input-group">
                 <small>This RSVP is for</small>
                 <p>{guest.email}</p>
                 <small className="text-muted">What name would you like other guests to see?</small>
@@ -146,7 +145,6 @@ function GuestAdd(props) {
                 <button type="button" className="btn btn-primary btn-block" onClick={() => submitGuest(2)}>I'm in!</button>
                 <button type="button" className="btn btn-outline-primary btn-block" onClick={() => submitGuest(1)}>Maybe</button>
                 <button type="button" className="btn btn-secondary btn-block" onClick={() => submitGuest(-1)}>Can't</button>
-            </div>
         </form>
     )
 }
