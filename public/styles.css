@@ -20,6 +20,19 @@ html {
     margin-bottom: .2rem;
   }
 
+  p {
+    margin-bottom: .5rem;
+  }
+
+  hr {
+    height: 5px;
+    background: radial-gradient(closest-side circle, rgb(187, 187, 187) 50%, rgba(0, 0, 0, 0) 100%);
+    background-position: center;
+    background-size: 25px;
+    background-repeat: repeat-x;
+    border-style: none;
+  }
+
   .no-shrink {
     flex-shrink: 0;
   }

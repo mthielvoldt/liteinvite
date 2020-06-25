@@ -17,6 +17,8 @@
     <div class="col-md-8 order-md-1">
       <h2 class="event-h mb-3">Details</h2>
       <div class="event-view-box event-view-box-single desc-view mb-3"><%= meetup.desc %></div>
+      <h2 class="event-h mb-3">Comments</h2>
+      <div id="comments"></div>
     </div>
 
     <!-- Guest List -->
@@ -37,6 +39,7 @@
 <data id="meetup-id" hidden><%= meetup._id %></data>
 
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<script src="/js/comments.js" type="text/jsx"></script>
 <script src="/js/guest-list-view.js" type="text/jsx"></script>
 
 <!-- <script src="guest-list-2.js" type="text/javascript" id="guest-list-script" meetup-id=<%= meetup._id %> > </script> -->

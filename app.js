@@ -223,6 +223,28 @@ app.get('/events/:meetId/invites', (req, res) => {
     });
 });
 
+
+const sample = [
+    {
+        date: "3-15-2020", 
+        name: "Jerry", 
+        text: "Help me help you!",
+        id: "12345"
+    }
+]
+
+app.get('/events/:meetId/comments', (req, res) => {
+    utils.logReq(req);
+    
+    res.json(sample);
+})
+
+app.post('/events/:meetId/comments', (req, res) => {
+    utils.logReq(req);
+    res.json(sample);
+
+});
+
 ///////////////////////////// POST routes follow //////////////////////////////
 
 // organizer creates new guest associated with specified event.  
