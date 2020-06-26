@@ -4,7 +4,6 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const guestEmail = document.getElementById("guest-email").innerText;
-const guestName = document.getElementById("guest-name").innerText;
 const meetId = document.getElementById("meetup-id").innerText;
 const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
@@ -124,11 +123,12 @@ function RSVP(props) {
 
 function GuestAdd(props) {
 
-    const [guest, setGuest] = useState({ name: guestName, email: guestEmail, status: 0 });
+    const [guest, setGuest] = useState({ name: document.getElementById("guest-name").innerText, email: guestEmail, status: 0 });
 
     function submitGuest(newStatus) {
-        guest.status = newStatus;
-        props.putGuest(guest);
+        let newGuestData = {...guest, status: newStatus};
+        props.putGuest(newGuestData);
+        setGuest(newGuestData);
     }
 
     function handleChange(event) {
