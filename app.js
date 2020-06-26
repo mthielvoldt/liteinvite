@@ -1,6 +1,6 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
-} 
+}
 console.log("%s environment", process.env.NODE_ENV);
 
 const express = require("express");
@@ -224,26 +224,40 @@ app.get('/events/:meetId/invites', (req, res) => {
 });
 
 
-const sample = [
-    {
-        date: "3-15-2020", 
-        name: "Jerry", 
-        text: "Help me help you!",
-        id: "12345"
-    }
-]
-
 app.get('/events/:meetId/comments', (req, res) => {
     utils.logReq(req);
-    
-    res.json(sample);
-})
 
-app.post('/events/:meetId/comments', (req, res) => {
-    utils.logReq(req);
-    res.json(sample);
-
+    utils.findMeetup(req, res, (foundMeetup) => {
+        res.json(prepComments(foundMeetup));
+    });
 });
+
+app.post('/events/:meetId/comments', async (req, res) => {
+    utils.logReq(req);
+    console.log(req.body);
+
+    // does req contain a name? 
+    if (!req.body.name || req.body.name === "") {
+        res.status(400).send("Please RSVP with your nickname before you comment");
+        return;
+    }
+
+    const date = new Date();
+    let newComment = {...req.body, 
+        date: date.toLocaleDateString()};
+
+    utils.findMeetup(req, res, (foundMeetup) => {
+        foundMeetup.comments.push(newComment);
+        foundMeetup.save( (err, meetup) => {
+            res.json(prepComments(meetup));     // do this after save so we can get the new comment's ID. 
+        });
+    });
+});
+
+function prepComments(meetup) {
+    return meetup.comments.map(
+        (comment) => ({ name: comment.name, date: comment.date, text: comment.text, id: comment.id }));
+}
 
 ///////////////////////////// POST routes follow //////////////////////////////
 
@@ -294,7 +308,7 @@ app.put('/events/:meetId/guests', (req, res) => {
         // include "sent" field if it isn't there. 
         sentGuest = Object.assign({ sent: 1 }, sentGuest);
 
-        // does the meetup's guest list conain this email?
+        // does the meetup's guest list contain this email?
         let index = foundMeetup.guests.findIndex((guest) => (utils.guestsEqual(guest, sentGuest)));
 
         if (index > -1) {

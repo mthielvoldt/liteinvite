@@ -50,6 +50,7 @@ const meetupSchema = new Schema({
   time: String,
   lists: [],
   guests: [{ name: String, email: String, sent: Number, status: Number }],
+  comments: [{ name: String, email: String, date: String, text: String }]
 });
 
 const Meetup = mongoose.model("meetup", meetupSchema);

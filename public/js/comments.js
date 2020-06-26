@@ -20,8 +20,9 @@ ReactDOM.render(
 function Comments() {
     const [comments, setComments] = useState([]);
 
-    xhr_load.onload = () => {
-        const res = JSON.parse(xhr_load.response);
+    xhr_load.onload = xhr_save.onload = function () {
+        let res = JSON.parse(this.response);
+        res.reverse();
         console.log(res);
         setComments(res);
     };
@@ -34,7 +35,7 @@ function Comments() {
 
 
     return (
-        <div class="event-view-box event-view-box-single desc-view mt-3">
+        <div className="event-view-box event-view-box-single desc-view mt-3">
             {comments.map((comment) => (
                 <Comment
                     key={comment.id}
@@ -58,10 +59,6 @@ function Comment({ comment }) {
 function AddComment(props) {
     const [comment, setComment] = useState("");
 
-    xhr_save.onload = () => {
-        if (xhr_save.status === 200) setSaved(true);
-    };
-
     function handleChange(event) {
         setComment(event.target.value);
 
@@ -71,9 +68,10 @@ function AddComment(props) {
             name: guestName,
             text: comment
         }
-        xhr_save.open("POST", detailsRoute);
+        xhr_save.open("POST", commentsRoute);
         xhr_save.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr_save.send(JSON.stringify(newComment));
+        setComment("");
     }
     return (
         <div>
