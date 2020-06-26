@@ -241,6 +241,9 @@ app.post('/events/:meetId/comments', async (req, res) => {
         res.status(400).send("Please RSVP with your nickname before you comment");
         return;
     }
+    if (!req.body.text || req.body.text === "") {
+        res.status(400).send("No sense posting an empty comment.")
+    }
 
     const date = new Date();
     let newComment = {...req.body, 
@@ -332,15 +335,15 @@ app.put('/events/:meetId/guests', (req, res) => {
     function filterFields({ email, name, status }) {
 
         if (!utils.validEmail(email)) {
-            res.status(400).send("Invalid email: guest not updated");
+            res.status(400).json({message: "Invalid email", guestList: []});
             return null;
         }
         if (!utils.validName(name)) {
-            res.status(400).send("Invalid name: guest not updated");
+            res.status(400).json({message: "Invalid name", guestList: []});
             return null;
         }
         if ((status !== -1) && (status !== 0) && (status !== 1) && (status !== 2)) {
-            res.status(400).send("Invalid 'status' field: guest not updated");
+            res.status(400).json({message: "Invalid status field", guestList: []});
             return null;
         }
         return { email, name, status };
