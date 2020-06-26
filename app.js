@@ -201,15 +201,13 @@ app.get('/events/:meetId/invites', (req, res) => {
     utils.logReq(req);
 
     utils.authFindMeetup(req, res, (meetup) => {
-        let eventName = meetup.name;
-        let organizerName = req.user.name;
         let numSent = 0;
 
         meetup.guests.forEach(guest => {
             if (guest.sent === 0) {
                 guest.sent = 1;
                 numSent += 1;
-                mailer.sendInvitation(meetup, guest, req.user.name)
+                mailer.sendInvitation(meetup, guest, req.user)
             }
         });
         // update the "sent" values to reflect emails sent. 
@@ -228,11 +226,11 @@ app.get('/events/:meetId/comments', (req, res) => {
     utils.logReq(req);
 
     utils.findMeetup(req, res, (foundMeetup) => {
-        res.json(prepComments(foundMeetup));
+        res.json(prepComments(foundMeetup, req));
     });
 });
 
-app.post('/events/:meetId/comments', async (req, res) => {
+app.post('/events/:meetId/comments', (req, res) => {
     utils.logReq(req);
     console.log(req.body);
 
@@ -252,14 +250,49 @@ app.post('/events/:meetId/comments', async (req, res) => {
     utils.findMeetup(req, res, (foundMeetup) => {
         foundMeetup.comments.push(newComment);
         foundMeetup.save( (err, meetup) => {
-            res.json(prepComments(meetup));     // do this after save so we can get the new comment's ID. 
+            res.json(prepComments(meetup, req));     // do this after save so we can get the new comment's ID. 
         });
     });
 });
 
-function prepComments(meetup) {
+app.delete('/events/:meetId/comments/:commentId', (req, res) => {
+    utils.logReq(req);
+
+    const commentId = req.params.commentId;
+    const email = req.query.email; 
+
+    utils.findMeetup(req, res, (meetup) => {
+        
+        const i = meetup.comments.findIndex( comment => comment.id === commentId );
+        if (i < 0) {
+            res.status(409).send("Comment not found");
+            return;
+        }
+        if (meetup.comments[i].email != email) {
+            console.log(typeof(meetup.comments[i].email), meetup.comments[i].email)
+            console.log(typeof(email), email)
+            res.status(401).send("You don't own that comment.");
+            return;
+        }
+
+
+        meetup.comments.splice(i, 1);
+        meetup.save();
+        res.json(prepComments(meetup, req));
+    })
+
+
+})
+
+function prepComments(meetup, req) {
     return meetup.comments.map(
-        (comment) => ({ name: comment.name, date: comment.date, text: comment.text, id: comment.id }));
+        (comment) => ({ 
+            name: comment.name, 
+            date: comment.date, 
+            text: comment.text, 
+            id: comment.id, 
+            mine:  comment.email === req.query.email
+        }));
 }
 
 ///////////////////////////// POST routes follow //////////////////////////////
