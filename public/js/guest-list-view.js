@@ -95,10 +95,11 @@ function RSVP(props) {
         xhrGuest.open("PUT", guestListRoute);
         xhrGuest.setRequestHeader('Content-type', 'application/json;charset=utf-8');
         xhrGuest.send(JSON.stringify(guest));
-
-        // close the RSVP window.
-        //setWindowVisible(false);
+        document.getElementById("guest-name").innerHTML = guest.name;
+        document.getElementById("guest-email").innerHTML = guest.email;
+        console.log(guest);
     }
+
     function setWindowVisible(visible) {
         setViewState({ ...viewState, windowVisible: visible });
     }

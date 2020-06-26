@@ -2,8 +2,6 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const meetId = $("#meetup-id").text();
-const guestEmail = document.getElementById("guest-email").innerText;
-const guestName = document.getElementById("guest-name").innerText;
 const commentsRoute = "/events/" + meetId + "/comments";
 
 const xhr_save = new XMLHttpRequest();
@@ -65,7 +63,8 @@ function AddComment(props) {
     }
     function postComment() {
         const newComment = {
-            name: guestName,
+            name: document.getElementById("guest-name").innerText,
+            email: document.getElementById("guest-email").innerText,
             text: comment
         }
         xhr_save.open("POST", commentsRoute);
