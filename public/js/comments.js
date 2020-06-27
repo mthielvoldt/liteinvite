@@ -113,7 +113,7 @@ function AddComment(props) {
                 rows="2"
                 className="event-edit-box event-edit-box-single"
                 placeholder="Use comments to organize or share." />
-            <button type="button" className="btn btn-primary" onClick={postComment}>Add Comment</button>
+            <button type="button" className="btn btn-primary" onClick={postComment}>Save Comment</button>
         </form>
     );
 
