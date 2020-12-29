@@ -14,7 +14,7 @@ function connect() {
   connected = true; 
   console.log('connecting to db:', dbName);
   return (
-    mongoose.connect(`mongodb://localhost:27017/${dbName}`,
+    mongoose.connect(`mongodb://li_db:27017/${dbName}`,
       { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
   );
 }
