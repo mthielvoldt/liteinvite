@@ -1,0 +1,1 @@
+docker run --name mongo-local -d -p 27017:27017 mongo --bind_ip_all
