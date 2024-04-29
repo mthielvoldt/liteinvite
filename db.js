@@ -8,7 +8,7 @@ let connected = false;
 let dbHost;
 switch (process.env.NODE_ENV) {
   case 'local':
-    dbHost = '127.0.0.1';
+    dbHost = 'local-db';
     break;
   default:
     dbHost = 'li_db';

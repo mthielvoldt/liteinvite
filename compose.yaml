@@ -1,0 +1,28 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: serve.Dockerfile
+    depends_on:
+      - local-db
+    environment:
+      NODE_ENV: local
+    ports:
+      - 3000:3000
+    develop:
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: .
+          target: /app
+          action: sync
+
+  local-db:
+    image: mongo
+    #volumes: 
+    #  - database:/data/db
+    ports:
+      - 27017:27017
+
+#volumes:
+  #database:
