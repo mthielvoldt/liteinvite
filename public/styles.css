@@ -108,8 +108,7 @@ html {
     height: 24px;
   }
 
-  .guest-email {
-
+  .guest-name {
     flex-grow: 1;
     padding: 6px;
     overflow: hidden;
@@ -123,6 +122,31 @@ html {
 
   .guest-input {
     display: block;
+  }
+
+  .guest-copy-icon {
+    display: inline-block;
+    user-select: none;
+    vertical-align: text-bottom;
+    overflow: visible;
+  }
+
+  .copy-url-popover {
+    visibility: hidden;
+    position: absolute;
+    z-index: 1;
+    top:-15px;
+    left:-30px;
+    color: rgb(223, 240, 255);
+    background-color: rgb(70, 63, 63);
+    padding: 3px;
+    
+    text-align: center;
+    border-radius: 6px;
+  }
+
+  .guest-copy-icon:hover .copy-url-popover {
+    visibility: visible;
   }
 
   .input-group .custom-file {
