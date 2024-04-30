@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://liteinvite.com/">
-    <img src="https://liteinvite.com/images/favicon_io/android-chrome-192x192.png" alt="LiteInvite logo" width="92" height="96">
+    <img src="https://liteinvite.com/images/LiteInvite192.png" alt="LiteInvite logo" width="92" height="96">
   </a>
 </p>
 
@@ -46,7 +46,9 @@ Please submit bugs and feature requests.  That is all.
 
 ## Tech
 
-The API adopts a RESTful structure.  If you would like to write an integration, please reach out. 
+The API attempts to be RESTful.
+
+I use server-side rendering with EJS, and also use React.  I do not use WebPack or any other tools commonly paired with React.  In creating, I wanted to learn what React is in isolation, apart from its normal ecosystem(s). 
 
 ### Back end stack: 
 
@@ -59,11 +61,12 @@ The API adopts a RESTful structure.  If you would like to write an integration, 
 - Nodemailer
 - passport-local-mongoose
 
-### Front end stack:
+### Server-side rendering
+- EJS
 
+### Front end:
 - Bootstrap
 - React
-- EJS
 - Babel
 
 Currently, liteinvite.com is hosted on a personal server running Ubuntu and Nginx.

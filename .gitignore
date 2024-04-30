@@ -1,6 +1,6 @@
 
-# Images
-public/images/
+# User-uploaded images
+public/user-images/*
 
 # Thumbnails
 .DS_Store
@@ -32,3 +32,6 @@ jspm_packages/
 
 # lock files for libreOffice
 .~lock.*
+
+# Keep all .gitkeep files - useful for keeping otherwise empty folders.
+!*.gitkeep

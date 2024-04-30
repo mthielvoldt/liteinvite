@@ -418,7 +418,7 @@ app.put('/events/:meetId/details', (req, res) => {
 
 // configure the upload to use the public/images dir and the meetId as the filename. 
 const storage = multer.diskStorage({
-    destination: 'public/images/', filename: (req, file, cb) => {
+    destination: 'public/user-images/', filename: (req, file, cb) => {
         cb(null, req.params.meetId)
     }
 });
