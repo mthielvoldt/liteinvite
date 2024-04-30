@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const utils = require('./utils');
 
 const liveTransportOpts = {
   host: "mail.name.com",
@@ -25,7 +26,7 @@ const transporter = liveTransporter;
 
 
 function sendInvitation(meetup, guest, sender) {
-  let eventUrl = "https://liteinvite.com/events/" + meetup._id + "?guest=" + guest._id;
+  const eventUrl = utils.getGuestsEventURL(meetup, guest);
 
   let subjectString = "Invitation to " + sender.name + "'s event";
 

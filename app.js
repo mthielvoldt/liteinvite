@@ -122,6 +122,7 @@ app.get('/events/:meetId', (req, res) => {
             if (guest !== undefined) {
                 guestEmail = guest.email;
                 guestName = guest.name;
+                console.log("found guest: " + guestName + guestEmail)
             }
         }
         res.render("event", { meetup: foundMeetup, guestEmail: guestEmail, guestName: guestName, authenticated: req.isAuthenticated() });
@@ -144,7 +145,7 @@ app.get('/events/:meetId/guests', (req, res) => {
     utils.findMeetup(req, res, (foundMeetup) => {
 
         let guestListPartial = utils.getPartialGuestList(foundMeetup)
-        console.log("guests for this meet: " + JSON.stringify(guestListPartial));
+        console.log("guests confirmed yes or maybe: " + JSON.stringify(guestListPartial));
         res.json(guestListPartial);
     });
 });
@@ -348,7 +349,7 @@ app.put('/events/:meetId/guests', (req, res) => {
         // include "sent" field if it isn't there. 
         sentGuest = Object.assign({ sent: 1 }, sentGuest);
 
-        // does the meetup's guest list contain this email?
+        // does the meetup's guest list contain this email/name combination?
         let index = foundMeetup.guests.findIndex((guest) => (utils.guestsEqual(guest, sentGuest)));
 
         if (index > -1) {
@@ -371,15 +372,18 @@ app.put('/events/:meetId/guests', (req, res) => {
     // Read only certain fields from input object and validate each one. (object destructuring)
     function filterFields({ email, name, status }) {
 
-        if (!utils.validEmail(email)) {
-            res.status(400).json({message: "Invalid email", guestList: []});
+        if ((email !== "") && !utils.validEmail(email)) {
+            console.log("invalid email")
+            res.status(400).json({message: "Provided email not valid", guestList: []});
             return null;
         }
         if (!utils.validName(name)) {
+            console.log("invalid name")
             res.status(400).json({message: "Invalid name", guestList: []});
             return null;
         }
         if ((status !== -1) && (status !== 0) && (status !== 1) && (status !== 2)) {
+            console.log("invalid status")
             res.status(400).json({message: "Invalid status field", guestList: []});
             return null;
         }

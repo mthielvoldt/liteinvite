@@ -4,6 +4,7 @@ const useState = React.useState;
 const useEffect = React.useEffect;
 
 const guestEmail = document.getElementById("guest-email").innerText;
+const guestName = document.getElementById("guest-name").innerText;
 const meetId = document.getElementById("meetup-id").innerText;
 const guestListRoute = "/events/" + meetId + "/guests";
 console.log("meetId: " + meetId);
@@ -37,7 +38,7 @@ function App() {
         <div className="App ">
             <GuestHeader numGuests={guests.length} />
             <GuestList guests={guests} />
-            {(guestEmail !== "") && <RSVP updateGuestList={updateGuestList} />}
+            {(guestEmail !== "" || guestName !== "") && <RSVP updateGuestList={updateGuestList} />}
         </div>
     );
 }

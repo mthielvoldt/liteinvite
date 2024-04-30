@@ -70,9 +70,13 @@ function validPassword(str) {
 }
 
 function getPartialGuestList(meetup) {
-  // only respond with the guests that are going, and only provide their nicknames. 
+  // only respond with the guests that are going, and only provide their names. 
   let guestListPartial = meetup.guests.filter((guest) => guest.status > 0);
   return guestListPartial.map((guest) => ({ name: guest.name, status: guest.status }));
+}
+
+function getGuestsEventURL(meetup, guest) {
+  return "https://liteinvite.com/events/" + meetup._id + "?guest=" + guest._id;
 }
 
 module.exports = {
@@ -84,4 +88,5 @@ module.exports = {
   validName: validName,
   validPassword: validPassword,
   getPartialGuestList: getPartialGuestList,
+  getGuestsEventURL: getGuestsEventURL,
 }
