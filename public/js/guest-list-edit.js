@@ -78,6 +78,23 @@ function GuestHeader(props) {
 
 function GuestLine(props) {
     // Informational line for guests that have already been added.
+    let guestStatus;
+    if (props.guest.sent === 0) { guestStatus = (<span className="text-muted">Not invited</span>) }
+    else {
+        switch (props.guest.status) {
+            case 2:
+                guestStatus = (<span className="text-success">Yes</span>);
+                break;
+            case 1:
+                guestStatus = (<span className="text-warning">Maybe</span>);
+                break;
+            case -1:
+                guestStatus = (<span className="text-danger">No</span>);
+                break;
+            default:
+                guestStatus = (<span className="text-muted">No RSVP</span>);
+        }
+    }
 
     return (
         <li className="event-view-box list-group-item d-flex lh-condensed" >
@@ -93,15 +110,7 @@ function GuestLine(props) {
             </div>
 
             <div className="guest-text guest-status" >
-                {props.guest.sent === 0 && ('-')}
-                {props.guest.sent === 1 && ('invited')}
-            </div>
-
-            <div className="guest-text guest-status" >
-                {props.guest.status === 2 && (<span className="text-success">Yes</span>)}
-                {props.guest.status === 1 && (<span className="text-warning">Maybe</span>)}
-                {props.guest.status === 0 && (<span className="text-muted">No RSVP</span>)}
-                {props.guest.status === -1 && (<span className="text-danger">No</span>)}
+                {guestStatus}
             </div>
 
         </li>
@@ -182,7 +191,7 @@ function SendButton(props) {
     return (
         <div className="row">
             <div className="col-8">
-                <button onClick={sendInvites} className="btn btn-primary mt-3">Send invitations</button>
+                <button onClick={sendInvites} className="btn btn-primary mt-3">Send email invites</button>
                 <p className="event-p">to new guests only</p>
             </div>
             {(viewState.status === 200) && (<div className="alert alert-success col-6" role="alert">{viewState.message}</div>)}
