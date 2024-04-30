@@ -204,7 +204,7 @@ app.get('/events/:meetId/invites', (req, res) => {
         let numSent = 0;
 
         meetup.guests.forEach(guest => {
-            if (guest.sent === 0) {
+            if ((guest.email !== "") && (guest.sent === 0)) {
                 guest.sent = 1;
                 numSent += 1;
                 mailer.sendInvitation(meetup, guest, req.user)
@@ -304,15 +304,19 @@ app.post('/events/:meetId/guests', function (req, res) {
 
     utils.authFindMeetup(req, res, (meetup) => {
         let meetId = req.params.meetId;
-        let newEmail = req.body.toString();     // comes in as text/plain.
+        let newGuest = {
+            name: req.body.name, 
+            email: req.body.email, 
+            status: 0, 
+            sent: 0
+        };
 
-        if (!utils.validEmail(newEmail)) {
+        if ((newGuest.email !== "") && !utils.validEmail(newGuest.email)) {
             console.log("Invalid guest email address.")
             res.status(400).send("Invalid email address");
             return;
         }
-
-        let newGuest = { email: newEmail, name: "", status: 0, sent: 0 };
+        
         console.log("meetup.guests", meetup.guests, "newGuest:", newGuest);
 
         // if this guest is already present, don't add to the array. 

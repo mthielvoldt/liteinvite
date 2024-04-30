@@ -34,15 +34,22 @@ function App() {
             .catch(error => console.log(error));
     }
 
-    function addGuest(newGuestEmail) {
+    function addGuest(newGuestName, newGuestEmail) {
 
-        // Check to see if this email has been entered before (case-insensitive match)
-        const hasMatch = guests.some((guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase());
+        // new guest has no email and there's another guest also with the same name and no email. 
+        const nameCollision = (newGuestEmail === "") && guests.some(
+            (guest) => guest.name === newGuestName
+        );
 
-        if (hasMatch) {
-            console.log("email matches one previously entered.");
+        // new guest has an email and this email has been entered before.
+        const emailCollision = (newGuestEmail !== "") && guests.some(
+            (guest) => guest.email.toUpperCase() === newGuestEmail.toUpperCase()
+        );
+
+        if (emailCollision || nameCollision) {
+            console.log("guest matches one previously entered.");
         } else {
-            setGuests([...guests, { email: newGuestEmail, status: 0, sent: 0 }]);
+            setGuests([...guests, { name: newGuestName, email: newGuestEmail, status: 0, sent: 0 }]);
         }
     }
 
@@ -144,13 +151,17 @@ function GuestAdd(props) {
     }
 
     function SubmitGuest(event) {
+        const newGuest = {
+            name: name,
+            email: email,
+        }
 
         // Here, we pass this email string to the parent component.
-        props.addGuest(email);
+        props.addGuest(name, email);
 
         xhrPost.open("POST", guestPostRoute);
-        xhrPost.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
-        xhrPost.send(email + "," + name);
+        xhrPost.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhrPost.send(JSON.stringify(newGuest));
         setEmail("");       // clear the input boxes. 
         setName("");
         event.preventDefault();

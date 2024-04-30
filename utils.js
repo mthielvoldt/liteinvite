@@ -11,8 +11,8 @@ function logReq(req) {
 
 function guestsEqual(guestA, guestB) {
   return (
-      //guestA.name === guestB.name ||
-      guestA.email === guestB.email
+      guestA.email === guestB.email && guestA.name === guestB.name ||
+      (guestA.email !== "" && guestA.email === guestB.email)
   );
 }
 
