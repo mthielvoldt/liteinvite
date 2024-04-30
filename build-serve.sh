@@ -1,1 +1,0 @@
-docker build -t liteinvite-build:latest -f build-serve.Dockerfile .
