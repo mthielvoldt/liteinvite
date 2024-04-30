@@ -77,6 +77,7 @@ function GuestHeader(props) {
 }
 
 function GuestLine(props) {
+    // Informational line for guests that have already been added.
 
     return (
         <li className="event-view-box list-group-item d-flex lh-condensed" >
@@ -108,7 +109,9 @@ function GuestLine(props) {
 }
 
 function GuestAdd(props) {
+    // Form for adding a new guest.
     const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
 
     let xhrPost = new XMLHttpRequest();
     xhrPost.onload = postSuccess;
@@ -124,12 +127,17 @@ function GuestAdd(props) {
 
         xhrPost.open("POST", guestPostRoute);
         xhrPost.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
-        xhrPost.send(email);
-        setEmail("");       // clear the input box. 
+        xhrPost.send(email + "," + name);
+        setEmail("");       // clear the input boxes. 
+        setName("");
         event.preventDefault();
     }
 
-    function handleChange(event) {
+    function handleNameChange(event) {
+        setName(event.target.value);
+    }
+
+    function handleEmailChange(event) {
         let newEmail = event.target.value;      // pull out the "value" attribute. 
         setEmail(newEmail);
     }
@@ -138,13 +146,20 @@ function GuestAdd(props) {
         // for some reason, this is enctype="multipart/form-data".  Figure out why. 
         <form className="mb-2" onSubmit={SubmitGuest} >
             <input
+                name="name"
+                type="name"
+                onChange={handleNameChange}
+                value={name}
+                placeholder="Guest name"
+                className="event-edit-box event-edit-box-single" />
+            <input
                 name="email"
                 type="email"
-                onChange={handleChange}
+                onChange={handleEmailChange}
                 value={email}
-                placeholder="Enter guest email"
-                className="guest-email-input event-edit-box event-edit-box-single" />
-            <span className="event-p">press [enter] to add guest.</span>
+                placeholder="Guest email"
+                className="guest-input event-edit-box event-edit-box-single" />
+            <input className="btn btn-primary mt-2" type="submit" value="Add guest"></input>
         </form>
     );
 }
