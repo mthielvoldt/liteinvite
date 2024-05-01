@@ -1,18 +1,22 @@
 services:
-  server:
+  li_api:
     build:
       context: .
       dockerfile: serve.Dockerfile
     depends_on:
-      - local-db
-    environment:
-      NODE_ENV: local
+      - li_db
+    # environment:
+    #   NODE_ENV: local
+    env_file: 
+      - ./.env
     volumes:
       - type: bind
         source: ./public/user-images
         target: /app/public/user-images
     ports:
       - 3000:3000
+    links: 
+      - li_db
     develop:
       watch:
         - path: ./package.json
@@ -21,12 +25,12 @@ services:
           target: /app
           action: sync
 
-  local-db:
-    image: mongo
+  li_db:
+    image: mongo:4.2-bionic
     volumes: 
      - li-data:/data/db
-    ports:
-      - 27017:27017
+    # ports:
+    #   - 27017:27017
 
 volumes:
   li-data:

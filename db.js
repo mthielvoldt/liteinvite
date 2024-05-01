@@ -5,14 +5,7 @@ const passportLocalMongoose = require("passport-local-mongoose");
 // Creates a new db if it is not already there.  Requires mongod to be running.
 let dbName = 'LiteInvite';
 let connected = false;
-let dbHost;
-switch (process.env.NODE_ENV) {
-  case 'local':
-    dbHost = 'local-db';
-    break;
-  default:
-    dbHost = 'li_db';
-}
+let dbHost = 'li_db';
 
 function connect() {
   if (connected) {
