@@ -245,12 +245,14 @@ app.post('/events/:meetId/comments', (req, res) => {
     }
 
     const date = new Date();
-    let newComment = {...req.body, 
-        date: date.toLocaleDateString()};
+    let newComment = {
+        ...req.body,
+        date: date.toLocaleDateString()
+    };
 
     utils.findMeetup(req, res, (foundMeetup) => {
         foundMeetup.comments.push(newComment);
-        foundMeetup.save( (err, meetup) => {
+        foundMeetup.save((err, meetup) => {
             res.json(prepComments(meetup, req));     // do this after save so we can get the new comment's ID. 
         });
     });
@@ -260,18 +262,18 @@ app.delete('/events/:meetId/comments/:commentId', (req, res) => {
     utils.logReq(req);
 
     const commentId = req.params.commentId;
-    const email = req.query.email; 
+    const email = req.query.email;
 
     utils.findMeetup(req, res, (meetup) => {
-        
-        const i = meetup.comments.findIndex( comment => comment.id === commentId );
+
+        const i = meetup.comments.findIndex(comment => comment.id === commentId);
         if (i < 0) {
             res.status(409).send("Comment not found");
             return;
         }
         if (meetup.comments[i].email != email) {
-            console.log(typeof(meetup.comments[i].email), meetup.comments[i].email)
-            console.log(typeof(email), email)
+            console.log(typeof (meetup.comments[i].email), meetup.comments[i].email)
+            console.log(typeof (email), email)
             res.status(401).send("You don't own that comment.");
             return;
         }
@@ -287,12 +289,12 @@ app.delete('/events/:meetId/comments/:commentId', (req, res) => {
 
 function prepComments(meetup, req) {
     return meetup.comments.map(
-        (comment) => ({ 
-            name: comment.name, 
-            date: comment.date, 
-            text: comment.text, 
-            id: comment.id, 
-            mine:  comment.email === req.query.email
+        (comment) => ({
+            name: comment.name,
+            date: comment.date,
+            text: comment.text,
+            id: comment.id,
+            mine: comment.email === req.query.email
         }));
 }
 
@@ -306,9 +308,9 @@ app.post('/events/:meetId/guests', function (req, res) {
     utils.authFindMeetup(req, res, (meetup) => {
         let meetId = req.params.meetId;
         let newGuest = {
-            name: req.body.name, 
-            email: req.body.email, 
-            status: 0, 
+            name: req.body.name,
+            email: req.body.email,
+            status: 0,
             sent: 0
         };
 
@@ -317,7 +319,7 @@ app.post('/events/:meetId/guests', function (req, res) {
             res.status(400).send("Invalid email address");
             return;
         }
-        
+
         console.log("meetup.guests", meetup.guests, "newGuest:", newGuest);
 
         // if this guest is already present, don't add to the array. 
@@ -374,17 +376,17 @@ app.put('/events/:meetId/guests', (req, res) => {
 
         if ((email !== "") && !utils.validEmail(email)) {
             console.log("invalid email")
-            res.status(400).json({message: "Provided email not valid", guestList: []});
+            res.status(400).json({ message: "Provided email not valid", guestList: [] });
             return null;
         }
         if (!utils.validName(name)) {
             console.log("invalid name")
-            res.status(400).json({message: "Invalid name", guestList: []});
+            res.status(400).json({ message: "Invalid name", guestList: [] });
             return null;
         }
         if ((status !== -1) && (status !== 0) && (status !== 1) && (status !== 2)) {
             console.log("invalid status")
-            res.status(400).json({message: "Invalid status field", guestList: []});
+            res.status(400).json({ message: "Invalid status field", guestList: [] });
             return null;
         }
         return { email, name, status };
@@ -438,7 +440,15 @@ app.post('/events/:meetId/image', (req, res) => {
         if (err) {
             console.log(err.message);
         }
-        res.redirect('/events/' + req.params.meetId + '/edit');
+
+        // Now change the image name from the default to the meet id. 
+        utils.authFindMeetup(req, res, (foundMeetup) => {
+            foundMeetup.image = foundMeetup._id;
+            foundMeetup.save().then(() => {
+                console.log("Updated meetup image.")
+                res.redirect('/events/' + req.params.meetId + '/edit');
+            });
+        });
     });
 });
 

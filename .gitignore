@@ -34,4 +34,4 @@ jspm_packages/
 .~lock.*
 
 # Keep all .gitkeep files - useful for keeping otherwise empty folders.
-!*.gitkeep
+!public/user-images/pine-trees-under-starry-night-sky-1539225.jpg
