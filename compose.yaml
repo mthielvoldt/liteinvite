@@ -35,3 +35,4 @@ services:
 volumes:
   li-data:
     name: web_li-data
+    external: true  # indicates it's an existing volume.
