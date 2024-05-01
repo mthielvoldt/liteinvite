@@ -34,3 +34,4 @@ services:
 
 volumes:
   li-data:
+    name: web_li-data
