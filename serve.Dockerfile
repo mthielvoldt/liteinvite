@@ -14,8 +14,13 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 
 COPY . .
 
-RUN chown -R node /app
-USER node
+### These were in multi-container-app
+### but a bind-mount added in docker compose changes the user-images 
+### ownership to root (likely to do with using docker-desktop), 
+### preventing "node" user from writing.  Removing chown fixes.
+### https://stackoverflow.com/questions/30140911/can-i-control-the-owner-of-a-bind-mounted-volume-in-a-docker-image
+# RUN chown -R node /app
+# USER node
 
 EXPOSE 3000
 CMD npm run dev

@@ -7,6 +7,10 @@ services:
       - local-db
     environment:
       NODE_ENV: local
+    volumes:
+      - type: bind
+        source: ./public/user-images
+        target: /app/public/user-images
     ports:
       - 3000:3000
     develop:
@@ -19,10 +23,10 @@ services:
 
   local-db:
     image: mongo
-    #volumes: 
-    #  - database:/data/db
+    volumes: 
+     - li-data:/data/db
     ports:
       - 27017:27017
 
-#volumes:
-  #database:
+volumes:
+  li-data:
