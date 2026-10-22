@@ -5,6 +5,7 @@ services:
       dockerfile: serve.Dockerfile
     depends_on:
       - li_db
+    restart: unless-stopped
     # environment:
     #   NODE_ENV: local
     env_file: 
@@ -27,6 +28,7 @@ services:
 
   li_db:
     image: mongo:4.2-bionic
+    restart: unless-stopped
     volumes: 
      - li-data:/data/db
     # ports:
